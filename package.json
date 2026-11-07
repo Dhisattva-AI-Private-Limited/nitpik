@@ -5,7 +5,8 @@
   "main": "dist/nitpik.js",
   "module": "src/index.js",
   "files": [
-    "dist"
+    "dist",
+    "mcp"
   ],
   "scripts": {
     "build": "node esbuild.config.js",
@@ -21,5 +22,11 @@
     "happy-dom": "^17.0.0",
     "serve": "^14.2.7",
     "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2"
+  },
+  "bin": {
+    "nitpik-mcp": "mcp/server.js"
   }
 }

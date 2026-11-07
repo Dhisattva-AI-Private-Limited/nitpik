@@ -3,6 +3,6 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'happy-dom',
-    include: ['tests/unit/**/*.test.js'],
+    include: ['tests/unit/**/*.test.js', 'mcp/**/*.test.js'],
   },
 })
