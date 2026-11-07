@@ -108,6 +108,46 @@ describe('observeDOM', () => {
   })
 })
 
+describe('observeDOM options and detached nodes', () => {
+  afterEach(() => { document.body.innerHTML = '' })
+  const tick = () => new Promise(r => setTimeout(r, 20))
+
+  it('applies exclude to late-added elements', async () => {
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, cb, { exclude: 'nav' })
+    const nav = document.createElement('nav')
+    nav.innerHTML = '<h3>Nav</h3>'
+    document.body.appendChild(nav)
+    await tick()
+    expect(cb).not.toHaveBeenCalled()
+    stop()
+  })
+
+  it('enforces maxElements across mutations', async () => {
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, cb, { maxElements: 2 })
+    document.body.innerHTML = '<h2>a</h2><h2>b</h2><h2>c</h2>'
+    await tick()
+    expect(cb.mock.calls[0][0]).toHaveLength(2)
+    document.body.appendChild(document.createElement('h4'))
+    await tick()
+    expect(cb).toHaveBeenCalledTimes(1)
+    stop()
+  })
+
+  it('skips nodes removed before the observer fires', async () => {
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, cb)
+    const h = document.createElement('h2')
+    h.textContent = 'gone'
+    document.body.appendChild(h)
+    h.remove()
+    await tick()
+    expect(cb).not.toHaveBeenCalled()
+    stop()
+  })
+})
+
 describe('createVisibilityObserver', () => {
   it('fires onVisible/onHidden from IntersectionObserver entries', () => {
     let handler

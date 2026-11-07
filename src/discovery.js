@@ -107,13 +107,21 @@ export function discoverElements(root, options) {
   return els.map(toInfo)
 }
 
-export function observeDOM(root, callback) {
+export function observeDOM(root, callback, options) {
+  const opts = options || {}
+  const max = opts.maxElements === undefined ? DEFAULT_MAX_ELEMENTS : opts.maxElements
+  let reported = 0
   const observer = new MutationObserver((mutations) => {
     const added = []
-    mutations.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) added.push(n) }))
-    if (!added.length) return
-    const infos = collectCandidates(added, {}, Infinity).map(toInfo)
-    if (infos.length) callback(infos)
+    mutations.forEach((m) => m.addedNodes.forEach((n) => {
+      if (n.nodeType === 1 && n.isConnected) added.push(n)
+    }))
+    const remaining = max - reported
+    if (!added.length || remaining <= 0) return
+    const infos = collectCandidates(added, opts, remaining).map(toInfo)
+    if (!infos.length) return
+    reported += infos.length
+    callback(infos)
   })
   observer.observe(root, { childList: true, subtree: true })
   return () => observer.disconnect()
