@@ -94,13 +94,23 @@ code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.9em}
 /* open source */
 .oss-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
 
+/* hero cta row */
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+
 /* bookmarklet */
+.bm-steps{display:grid;gap:16px;margin-bottom:32px}
+.bm-step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;text-align:center}
+.bm-step .card-icon{width:32px;height:32px;color:var(--accent-dark);margin:0 auto 12px}
+.bm-step .card-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .bookmarklet-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:24px}
-.bookmarklet-link{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:1rem;text-decoration:none;background:var(--accent);color:#1E293B;padding:12px 22px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab;user-select:none;-webkit-user-select:none;transition:box-shadow .15s,transform .15s}
-.bookmarklet-link:hover{box-shadow:0 4px 16px rgba(0,0,0,.25);transform:translateY(-1px);color:#1E293B}
+.bookmarklet-link{display:inline-flex;align-items:center;gap:10px;font:inherit;font-weight:700;font-size:1.1rem;text-decoration:none;background:var(--accent);color:#1E293B;padding:14px 28px;border-radius:10px;box-shadow:0 3px 12px rgba(245,158,11,.35);cursor:grab;user-select:none;-webkit-user-select:none;transition:box-shadow .15s,transform .15s}
+.bookmarklet-link:hover{box-shadow:0 6px 24px rgba(245,158,11,.4);transform:translateY(-2px);color:#1E293B}
 .bookmarklet-link:active{cursor:grabbing;transform:translateY(0)}
-.bookmarklet-link svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.bookmarklet-link svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .bookmarklet-hint{font-size:.9rem;color:var(--muted);font-weight:500}
+
+/* output example */
+.output-example{margin-top:12px;background:#F1F5F9;border-radius:6px;padding:10px 12px;font-size:.78rem;line-height:1.5;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:#475569;overflow-x:auto}
 
 /* cloud */
 .cloud{background:var(--surface);border:1px dashed #CBD5E1;border-radius:10px;padding:32px 24px}
@@ -121,6 +131,7 @@ footer nav{display:flex;gap:20px}
   .hero{padding:96px 0 72px}
   section{padding:80px 0}
   .grid.three{grid-template-columns:repeat(3,1fr)}
+  .bm-steps{grid-template-columns:repeat(3,1fr)}
   .ai-grid{grid-template-columns:repeat(3,1fr)}
   .callout{padding:40px}
   form.signup{flex-direction:row}
@@ -141,6 +152,10 @@ footer nav{display:flex;gap:20px}
     <div class="codebox big">
       <pre id="hero-code">&lt;script src="https://cdn.jsdelivr.net/npm/nitpik"&gt;&lt;/script&gt;</pre>
       <button class="copy-btn" type="button" data-copy="hero-code">Copy</button>
+    </div>
+    <div class="hero-ctas">
+      <a class="btn-solid" href="#try">Get the bookmarklet</a>
+      <a class="btn-outline" href="https://github.com/Dhisattva-AI-Private-Limited/nitpik" style="border-color:var(--text)">View on GitHub</a>
     </div>
     <div class="hero-stats">
       <span class="stat"><strong>&lt; 7 KB</strong>gzipped</span>
@@ -197,7 +212,7 @@ footer nav{display:flex;gap:20px}
     <div class="callout">
       <p class="kicker" style="color:var(--accent)">Live demo</p>
       <h2>This page runs NitPik right now.</h2>
-      <p>Hover any section below the hero and click the comment icon. Your comment is copied to the clipboard as Markdown. Try it on any heading, card, or button.</p>
+      <p>Hover any heading, card, or button below the hero. A small trigger appears on the top-right corner &mdash; click it, type your feedback, and submit. The comment is copied to your clipboard as Markdown, ready to paste anywhere.</p>
     </div>
   </div>
 </section>
@@ -207,18 +222,37 @@ footer nav{display:flex;gap:20px}
 <section id="try">
   <div class="wrap">
     <p class="kicker">Use on any page</p>
-    <h2>Drag the bookmarklet. Click on any site.</h2>
-    <p style="margin-bottom:20px">Drag the button below to your bookmarks bar. Then visit any website and click it to activate NitPik.</p>
+    <h2>Three seconds to start reviewing any website.</h2>
+    <div class="bm-steps">
+      <div class="bm-step">
+        <!-- lucide:hand-grab --><div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 11.5V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1.4"/><path d="M14 10V8a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 9.9V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v5"/><path d="M6 14a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8 2 2 0 1 1 4 0"/></svg></div>
+        <span class="step-label">Step 1</span>
+        <h3>Drag to bookmarks</h3>
+        <p>Grab the button below and drop it on your browser&rsquo;s bookmarks bar.</p>
+      </div>
+      <div class="bm-step">
+        <!-- lucide:globe-2 --><div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17"/><path d="M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05"/><circle cx="12" cy="12" r="10"/></svg></div>
+        <span class="step-label">Step 2</span>
+        <h3>Visit any website</h3>
+        <p>Navigate to the page you want to review &mdash; staging, production, a competitor.</p>
+      </div>
+      <div class="bm-step">
+        <!-- lucide:mouse-pointer-click --><div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg></div>
+        <span class="step-label">Step 3</span>
+        <h3>Click to activate</h3>
+        <p>Click the bookmarklet. NitPik appears instantly. Hover any element and comment.</p>
+      </div>
+    </div>
     <div class="bookmarklet-row">
-      <a class="bookmarklet-link" href="javascript:void((function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(s)})())" title="Drag to bookmarks bar"><!-- lucide:mouse-pointer-click --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg> NitPik it</a>
+      <a class="bookmarklet-link" href="javascript:void((function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://nitpik.bachao.ai/nitpik.min.js';s.onerror=function(){var f=document.createElement('script');f.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(f)};document.body.appendChild(s)})())" title="Drag to bookmarks bar"><!-- lucide:mouse-pointer-click --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg> NitPik it</a>
       <span class="bookmarklet-hint">&larr; Drag this to your bookmarks bar</span>
     </div>
-    <p style="margin-bottom:10px;font-size:.95rem"><strong>Or paste in the browser console:</strong></p>
+    <p style="margin-bottom:10px;font-size:.95rem"><strong>Or paste in your browser console:</strong></p>
     <div class="codebox">
-      <pre id="console-code">(function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(s)})()</pre>
+      <pre id="console-code">(function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://nitpik.bachao.ai/nitpik.min.js';s.onerror=function(){var f=document.createElement('script');f.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(f)};document.body.appendChild(s)})()</pre>
       <button class="copy-btn" type="button" data-copy="console-code">Copy</button>
     </div>
-    <p class="note" style="margin-top:12px">Some sites with strict Content Security Policy may block injected scripts. The console paste is a fallback for those.</p>
+    <p class="note" style="margin-top:12px">Works on most sites. Some with strict Content Security Policy may block injected scripts &mdash; the console paste is a fallback.</p>
   </div>
 </section>
 
@@ -250,18 +284,21 @@ footer nav{display:flex;gap:20px}
         <h3>Clipboard</h3>
         <p>The default. Each comment is copied as Markdown, ready to paste into a chat, an issue, or a prompt.</p>
         <pre>data-mode="clipboard"</pre>
+        <div class="output-example">[section &gt; h2: Pricing]: The monthly price feels hidden. Move it above the fold.</div>
       </div>
       <div class="card">
         <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M12 17v-6"/><path d="M9.5 14.5l2.5 2.5l2.5 -2.5"/></svg></div>
         <h3>Collect</h3>
-        <p>Comments pile up in the browser. Export them all as a Markdown or JSON file in one click.</p>
+        <p>Comments pile up in the browser. When the review round is done, export everything as Markdown or JSON in one click.</p>
         <pre>data-mode="collect"</pre>
+        <div class="output-example">12 comments collected &mdash; Export MD | Export JSON</div>
       </div>
       <div class="card">
         <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg></div>
         <h3>Callback / API</h3>
-        <p>Handle each comment in your own code or POST to any endpoint. Send feedback to your tracker or backend.</p>
+        <p>Handle each comment in your own code, or POST to any endpoint. Route feedback straight to your tracker or backend.</p>
         <pre>NitPik.on('comment', fn)</pre>
+        <div class="output-example">POST /api/comments &rarr; { selector, path, comment, reviewer, timestamp }</div>
       </div>
     </div>
   </div>
@@ -273,7 +310,8 @@ footer nav{display:flex;gap:20px}
   <div class="wrap">
     <p class="kicker">For AI-assisted development</p>
     <h2>Your AI assistant adds NitPik in one prompt.</h2>
-    <p style="margin-bottom:20px">Ship a page with AI, then get real human feedback on it. The MCP server lets your coding assistant inject the script, read comments back, and strip it when the review is done.</p>
+    <p style="margin-bottom:8px">Ship a page with AI, then get real human feedback on it. The MCP server lets your coding assistant inject the script, read comments back, and strip it when the review is done.</p>
+    <p class="muted" style="font-size:.9rem;margin-bottom:20px"><em>&ldquo;Add NitPik to index.html so my team can review it, then read what they said and fix it.&rdquo;</em> &mdash; That&rsquo;s the whole prompt.</p>
     <div class="ai-grid">
       <div class="ai-card">
         <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></div>
@@ -375,10 +413,11 @@ NitPik.init({ mode: 'collect' })</pre>
 
 <footer>
   <div class="wrap">
-    <span>Built by Dhisattva AI Pvt Ltd</span>
+    <span>An open-source project by <a href="https://bachao.ai" style="font-weight:600">Bachao.AI</a></span>
     <nav aria-label="Footer">
       <a href="https://github.com/Dhisattva-AI-Private-Limited/nitpik">GitHub</a>
       <a href="https://www.npmjs.com/package/nitpik">npm</a>
+      <a href="https://bachao.ai">Bachao.AI</a>
     </nav>
   </div>
 </footer>
