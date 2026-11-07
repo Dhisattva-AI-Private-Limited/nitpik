@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs'
 import { join } from 'path'
 import {
   injectHtml, stripHtml, extractComments, getStatus,
-  injectFile, stripFile, readCommentsFile, statusFile,
+  injectFile, stripFile, readCommentsFile, statusFile, TOOLS,
 } from './server.js'
 
 describe('injectHtml', () => {
@@ -93,5 +93,19 @@ describe('file handlers', () => {
     expect(JSON.parse(readCommentsFile(file))).toEqual([1])
     writeFileSync(file, '<body></body>')
     expect(readCommentsFile(file)).toBe('no comments found')
+  })
+  it('reads comments from a JSON commentsFile', () => {
+    const json = join(TMP, 'comments.json')
+    writeFileSync(json, '[{"comment":"fix"}]')
+    expect(JSON.parse(readCommentsFile(undefined, json))).toEqual([{ comment: 'fix' }])
+    writeFileSync(json, '{bad')
+    expect(() => readCommentsFile(undefined, json)).toThrow()
+  })
+  it('nitpik_read tool prefers commentsFile and requires an input', () => {
+    const tool = TOOLS.find((t) => t.name === 'nitpik_read')
+    const json = join(TMP, 'c2.json')
+    writeFileSync(json, '[2]')
+    expect(JSON.parse(tool.run({ commentsFile: json }))).toEqual([2])
+    expect(() => tool.run({})).toThrow(/commentsFile/)
   })
 })

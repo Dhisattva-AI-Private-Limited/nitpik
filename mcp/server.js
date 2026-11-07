@@ -80,7 +80,12 @@ export function stripFile(file) {
   return `Removed ${r.removed} NitPik script tag(s) from ${path}.`
 }
 
-export function readCommentsFile(file) {
+export function readCommentsFile(file, commentsFile) {
+  if (commentsFile) {
+    const path = resolve(commentsFile)
+    const data = JSON.parse(readFileSync(path, 'utf-8'))
+    return JSON.stringify(data, null, 2)
+  }
   const c = extractComments(readFileSync(resolve(file), 'utf-8'))
   return c === null ? 'no comments found' : JSON.stringify(c, null, 2)
 }
@@ -113,7 +118,21 @@ export const TOOLS = [
     run: (a) => injectFile(a.file, a),
   },
   { name: 'nitpik_strip', description: 'Remove the NitPik script tag from an HTML file', inputSchema: { type: 'object', properties: fileProp, required: ['file'] }, run: (a) => stripFile(a.file) },
-  { name: 'nitpik_read', description: 'Read NitPik comments saved in an HTML file (script[data-nitpik-comments])', inputSchema: { type: 'object', properties: fileProp, required: ['file'] }, run: (a) => readCommentsFile(a.file) },
+  {
+    name: 'nitpik_read',
+    description: 'Read NitPik review comments. Mode 1: pass commentsFile (path to a .json file, e.g. the one downloaded by collect mode) and its contents are returned. Mode 2: pass only file (HTML) to read comments embedded in script[data-nitpik-comments], if present.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', description: 'Path to the HTML file (used for the embedded-comments fallback)' },
+        commentsFile: { type: 'string', description: 'Path to a .json comments file produced by collect mode download; takes precedence over file' },
+      },
+    },
+    run: (a) => {
+      if (!a.commentsFile && !a.file) throw new Error('Provide commentsFile (JSON) or file (HTML)')
+      return readCommentsFile(a.file, a.commentsFile)
+    },
+  },
   { name: 'nitpik_status', description: 'Check whether NitPik is present in an HTML file and its config', inputSchema: { type: 'object', properties: fileProp, required: ['file'] }, run: (a) => statusFile(a.file) },
 ]
 
