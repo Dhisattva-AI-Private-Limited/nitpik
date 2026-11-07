@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, realpathSync } from 'fs'
-import { dirname, relative, resolve, join } from 'path'
+import { readFileSync, writeFileSync, copyFileSync, existsSync, realpathSync } from 'fs'
+import { dirname, resolve, join } from 'path'
 import { fileURLToPath } from 'url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const DIST_FILE = join(HERE, '..', 'dist', 'nitpik.js')
+const DIST_DIR = join(HERE, '..', 'dist')
+const DEFAULT_SRC = 'nitpik.js'
 
-const NITPIK_SCRIPT_RE = /<script\b[^>]*\bsrc\s*=\s*["'][^"']*nitpik[^"']*["'][^>]*>\s*<\/script\s*>/gi
+const NITPIK_SCRIPT_RE = /<script\b[^>]*\bdata-nitpik-injected\b[^>]*>\s*<\/script\s*>/gi
 const COMMENTS_RE = /<script\b[^>]*\bdata-nitpik-comments\b[^>]*>([\s\S]*?)<\/script\s*>/i
 const ATTRS = ['mode', 'color', 'reviewer']
 
@@ -28,7 +29,7 @@ export function injectHtml(html, { src, mode, color, reviewer }) {
   for (const k of ATTRS) {
     if (values[k]) { attributes[k] = values[k]; attrs += ` data-${k}="${escapeAttr(values[k])}"` }
   }
-  const tag = `<script src="${escapeAttr(src)}"${attrs}></script>`
+  const tag = `<script src="${escapeAttr(src)}" data-nitpik-injected${attrs}></script>`
   const at = (re) => { const i = html.search(re); return i }
   let out
   const body = at(/<\/body\s*>/i)
@@ -58,14 +59,17 @@ export function getStatus(html) {
 
 // ---- File handlers (fs wrappers returning message text) ----
 
-export function injectFile(file, opts = {}) {
+export function injectFile(file, opts = {}, distDir = DIST_DIR) {
   const path = resolve(file)
-  const src = relative(dirname(path), DIST_FILE).split('\\').join('/')
-  const r = injectHtml(readFileSync(path, 'utf-8'), { ...opts, src })
-  if (!r.changed) return `NitPik is already present in ${path}; nothing changed.`
+  const html = readFileSync(path, 'utf-8')
+  if (findNitPikTag(html)) return `NitPik is already present in ${path}; nothing changed.`
+  const built = ['nitpik.min.js', 'nitpik.js'].map((f) => join(distDir, f)).find(existsSync)
+  if (!built) throw new Error(`NitPik build not found in ${distDir}. Run \`npm run build\` first.`)
+  const r = injectHtml(html, { ...opts, src: DEFAULT_SRC })
+  copyFileSync(built, join(dirname(path), DEFAULT_SRC))
   writeFileSync(path, r.html)
   const desc = Object.entries(r.attributes).map(([k, v]) => `${k}=${v}`).join(', ') || 'defaults'
-  return `Injected NitPik into ${path} (src=${src}; ${desc}).`
+  return `Injected NitPik into ${path} (copied ${built} to ${DEFAULT_SRC}; ${desc}).`
 }
 
 export function stripFile(file) {
