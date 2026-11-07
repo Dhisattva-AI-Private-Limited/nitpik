@@ -33,6 +33,12 @@ describe('isComponentBoundary', () => {
     expect(isComponentBoundary(small)).toBe(false)
   })
 
+  it('accepts SVG created via createElementNS (real browser path)', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('width', '48')
+    expect(isComponentBoundary(svg)).toBe(true)
+  })
+
   it('accepts button', () => {
     expect(isComponentBoundary(document.createElement('button'))).toBe(true)
   })
@@ -275,6 +281,23 @@ describe('observeDOM', () => {
     document.body.innerHTML = '<h2>a</h2><h2>b</h2><h2>c</h2>'
     await tick()
     expect(cb.mock.calls[0][0].length).toBeLessThanOrEqual(2)
+    stop()
+  })
+
+  it('cleans up nodeMap when elements are removed', async () => {
+    document.body.innerHTML = '<section><h2>Keep</h2><h3>Remove</h3></section>'
+    const { nodeMap } = buildTree(document.body)
+    const h3 = document.querySelector('h3')
+    expect(nodeMap.has(h3)).toBe(true)
+    const section = document.querySelector('section')
+    const sectionNode = nodeMap.get(section)
+    expect(sectionNode.children).toHaveLength(2)
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, nodeMap, cb)
+    h3.remove()
+    await tick()
+    expect(nodeMap.has(h3)).toBe(false)
+    expect(sectionNode.children).toHaveLength(1)
     stop()
   })
 

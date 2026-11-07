@@ -41,7 +41,7 @@ function isPassthroughDiv(el) {
 }
 
 export function isComponentBoundary(el, options) {
-  if (!(el instanceof HTMLElement)) return false
+  if (!(el instanceof Element) || el.nodeType !== 1) return false
   if (el.hasAttribute('data-nitpik-host')) return false
   if (el.hasAttribute('data-nitpik')) return true
   if (matchesSelector(el, options && options.include)) return true
@@ -51,7 +51,7 @@ export function isComponentBoundary(el, options) {
   if (SEMANTIC_SECTIONS.has(tag)) return true
   if (HEADING_RE.test(tag)) return true
   if (MEDIA_TAGS.has(tag)) return true
-  if (tag === 'SVG') return svgWidth(el) > SVG_MIN_WIDTH
+  if (tag === 'SVG' || tag === 'svg') return svgWidth(el) > SVG_MIN_WIDTH
   if (tag === 'BUTTON') return true
   if (tag === 'A') return textOf(el).length > 0
 
@@ -139,9 +139,26 @@ export function observeDOM(root, nodeMap, callback, options) {
   const opts = options || {}
   const max = opts.maxElements === undefined ? DEFAULT_MAX_ELEMENTS : opts.maxElements
 
-  const observer = new MutationObserver((mutations) => {
-    const newNodes = []
+  function removeNode(el) {
+    const node = nodeMap.get(el)
+    if (!node) return
+    nodeMap.delete(el)
+    if (node.parent) {
+      const idx = node.parent.children.indexOf(node)
+      if (idx >= 0) node.parent.children.splice(idx, 1)
+    }
+    node.children.slice().forEach((child) => removeNode(child.element))
+  }
 
+  const observer = new MutationObserver((mutations) => {
+    let removed = false
+    mutations.forEach((m) => m.removedNodes.forEach((n) => {
+      if (n.nodeType !== 1) return
+      walkRemoved(n)
+      removed = true
+    }))
+
+    const newNodes = []
     mutations.forEach((m) => m.addedNodes.forEach((n) => {
       if (n.nodeType !== 1 || !n.isConnected) return
       walkForNew(n, newNodes)
@@ -150,6 +167,14 @@ export function observeDOM(root, nodeMap, callback, options) {
     if (!newNodes.length) return
     callback(newNodes)
   })
+
+  function walkRemoved(el) {
+    if (nodeMap.has(el)) removeNode(el)
+    const children = el.children
+    if (children) {
+      for (let i = 0; i < children.length; i++) walkRemoved(children[i])
+    }
+  }
 
   function walkForNew(el, collected) {
     if (nodeMap.size >= max || collected.length + nodeMap.size >= max) return

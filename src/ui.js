@@ -44,7 +44,6 @@ export function createUI(options = {}) {
   let comments = []
   let reviewMode = false
   let resizeObserver = null
-  let rafPending = false
   const cleanups = []
   const commented = new Set()
 
@@ -273,7 +272,6 @@ export function createUI(options = {}) {
     if (host) host.remove()
     host = root = popover = counter = panel = triggerEl = highlightEl = activeNode = null
     nodeMap = null
-    rafPending = false
   }
 
   return ctl
