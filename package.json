@@ -9,12 +9,30 @@
     "mcp"
   ],
   "scripts": {
-    "build": "node esbuild.config.js",
-    "build:min": "node esbuild.config.js --min-only",
-    "dev": "node esbuild.config.js --watch",
+    "build": "node init && node esbuild.config.js",
+    "build:min": "node init && node esbuild.config.js --min-only",
+    "dev": "node init && node esbuild.config.js --watch",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "prepublishOnly": "npm run build && npm test"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dhisattva-AI-Private-Limited/nitpik.git"
+  },
+  "homepage": "https://dhisattva-ai-private-limited.github.io/nitpik/",
+  "keywords": [
+    "review",
+    "feedback",
+    "comment",
+    "web",
+    "html",
+    "dom",
+    "annotation",
+    "nitpick",
+    "mcp"
+  ],
+  "author": "Dhisattva AI Pvt Ltd",
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.65.0",
