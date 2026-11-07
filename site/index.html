@@ -94,6 +94,14 @@ code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.9em}
 /* open source */
 .oss-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
 
+/* bookmarklet */
+.bookmarklet-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:24px}
+.bookmarklet-link{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;font-size:1rem;text-decoration:none;background:var(--accent);color:#1E293B;padding:12px 22px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.18);cursor:grab;user-select:none;-webkit-user-select:none;transition:box-shadow .15s,transform .15s}
+.bookmarklet-link:hover{box-shadow:0 4px 16px rgba(0,0,0,.25);transform:translateY(-1px);color:#1E293B}
+.bookmarklet-link:active{cursor:grabbing;transform:translateY(0)}
+.bookmarklet-link svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.bookmarklet-hint{font-size:.9rem;color:var(--muted);font-weight:500}
+
 /* cloud */
 .cloud{background:var(--surface);border:1px dashed #CBD5E1;border-radius:10px;padding:32px 24px}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:4px;margin-bottom:12px}
@@ -191,6 +199,26 @@ footer nav{display:flex;gap:20px}
       <h2>This page runs NitPik right now.</h2>
       <p>Hover any section below the hero and click the comment icon. Your comment is copied to the clipboard as Markdown. Try it on any heading, card, or button.</p>
     </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+<section id="try">
+  <div class="wrap">
+    <p class="kicker">Use on any page</p>
+    <h2>Drag the bookmarklet. Click on any site.</h2>
+    <p style="margin-bottom:20px">Drag the button below to your bookmarks bar. Then visit any website and click it to activate NitPik.</p>
+    <div class="bookmarklet-row">
+      <a class="bookmarklet-link" href="javascript:void((function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(s)})())" title="Drag to bookmarks bar"><!-- lucide:mouse-pointer-click --><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg> NitPik it</a>
+      <span class="bookmarklet-hint">&larr; Drag this to your bookmarks bar</span>
+    </div>
+    <p style="margin-bottom:10px;font-size:.95rem"><strong>Or paste in the browser console:</strong></p>
+    <div class="codebox">
+      <pre id="console-code">(function(){if(window.NitPik)return;var s=document.createElement('script');s.src='https://dhisattva-ai-private-limited.github.io/nitpik/nitpik.min.js';document.body.appendChild(s)})()</pre>
+      <button class="copy-btn" type="button" data-copy="console-code">Copy</button>
+    </div>
+    <p class="note" style="margin-top:12px">Some sites with strict Content Security Policy may block injected scripts. The console paste is a fallback for those.</p>
   </div>
 </section>
 
