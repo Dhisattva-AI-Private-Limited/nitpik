@@ -129,9 +129,13 @@ const api = {
     if (state) state.emitter.off(event, fn)
   },
   get count() { return state ? state.storage.count : 0 },
-  // test hooks
-  _submitForTest(data, el) { if (state) state.handleSubmit(data, el) },
-  _exportForTest(fmt) { return state ? state.onExport(fmt) : undefined },
+}
+
+// Internal hooks for unit tests only. Named export: the build unwraps the IIFE
+// global to the default export, so these never reach window.NitPik.
+export const __internals = {
+  submit(data, el) { if (state) state.handleSubmit(data, el) },
+  exportAction(fmt) { return state ? state.onExport(fmt) : undefined },
 }
 
 export default api

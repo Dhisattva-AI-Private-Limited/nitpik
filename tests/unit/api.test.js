@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import api, { parseScriptConfig } from '../../src/index.js'
+import api, { parseScriptConfig, __internals } from '../../src/index.js'
 
 const root = () => document.querySelector('[data-nitpik-host]').shadowRoot
 
@@ -11,6 +11,10 @@ describe('NitPik public API', () => {
   afterEach(() => {
     api.destroy()
     document.body.innerHTML = ''
+  })
+
+  it('does not expose test hooks on the public object', () => {
+    expect(Object.keys(api).filter((k) => k.startsWith('_'))).toEqual([])
   })
 
   it('exposes the public methods', () => {
@@ -46,8 +50,7 @@ describe('NitPik public API', () => {
     api.init({ mode: 'collect', reviewer: 'Asha' })
     const fn = vi.fn()
     api.on('comment', fn)
-    // reach internal submit through a lazily-attached trigger: force-attach via test hook
-    api._submitForTest({ selector: 'h1', path: 'h1: Test', tagName: 'H1', textPreview: 'Test', comment: 'fix', reviewer: 'Asha', timestamp: 't' }, document.querySelector('h1'))
+    __internals.submit({ selector: 'h1', path: 'h1: Test', tagName: 'H1', textPreview: 'Test', comment: 'fix', reviewer: 'Asha', timestamp: 't' }, document.querySelector('h1'))
     expect(api.getComments().length).toBe(1)
     expect(fn).toHaveBeenCalledTimes(1)
     expect(root().querySelector('[data-nitpik-toast]').textContent).toBe('Comment saved')
@@ -63,14 +66,14 @@ describe('NitPik public API', () => {
     const fn = vi.fn()
     api.on('comment', fn)
     api.off('comment', fn)
-    api._submitForTest({ comment: 'x' }, null)
+    __internals.submit({ comment: 'x' }, null)
     expect(fn).not.toHaveBeenCalled()
   })
 
   it('export wiring: clear empties collected comments', () => {
     api.init({ mode: 'collect' })
-    api._submitForTest({ comment: 'x' }, null)
-    api._exportForTest('clear')
+    __internals.submit({ comment: 'x' }, null)
+    __internals.exportAction('clear')
     expect(api.getComments()).toEqual([])
   })
 })
@@ -106,7 +109,7 @@ describe('export wiring', () => {
     const clicks = []
     const orig = HTMLAnchorElement.prototype.click
     HTMLAnchorElement.prototype.click = function () { clicks.push(this.download) }
-    api._exportForTest('md'); api._exportForTest('json')
+    __internals.exportAction('md'); __internals.exportAction('json')
     HTMLAnchorElement.prototype.click = orig
     api.destroy()
     expect(clicks).toEqual(['nitpik-comments.md', 'nitpik-comments.json'])
