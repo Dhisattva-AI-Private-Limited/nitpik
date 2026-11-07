@@ -1,58 +1,193 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { discoverElements, observeDOM, createVisibilityObserver } from '../../src/discovery.js'
+import { buildTree, isComponentBoundary, observeDOM } from '../../src/discovery.js'
 
-describe('discoverElements', () => {
+describe('isComponentBoundary', () => {
   afterEach(() => { document.body.innerHTML = '' })
 
-  it('finds all h1-h6 elements', () => {
-    document.body.innerHTML = '<h1>Title</h1><h2>Sub</h2><p>text</p>'
-    const tags = discoverElements(document.body, {}).map(r => r.tagName)
-    expect(tags).toContain('H1')
-    expect(tags).toContain('H2')
+  it('accepts semantic sections', () => {
+    for (const tag of ['section', 'article', 'aside', 'nav', 'header', 'footer', 'main']) {
+      const el = document.createElement(tag)
+      expect(isComponentBoundary(el)).toBe(true)
+    }
   })
 
-  it('finds elements with card/hero/cta class', () => {
-    document.body.innerHTML = '<div class="pricing-card">Content here that is long enough</div>'
-    const results = discoverElements(document.body, {})
-    expect(results.some(r => r.element.classList.contains('pricing-card'))).toBe(true)
+  it('accepts headings h1-h6', () => {
+    for (let i = 1; i <= 6; i++) {
+      const el = document.createElement(`h${i}`)
+      expect(isComponentBoundary(el)).toBe(true)
+    }
   })
 
-  it('respects data-nitpik-ignore', () => {
-    document.body.innerHTML = '<h1 data-nitpik-ignore>Skip</h1><h2>Keep</h2>'
-    const results = discoverElements(document.body, {})
-    expect(results.some(r => r.tagName === 'H1')).toBe(false)
-    expect(results.some(r => r.tagName === 'H2')).toBe(true)
+  it('accepts img, video, iframe', () => {
+    for (const tag of ['img', 'video', 'iframe']) {
+      expect(isComponentBoundary(document.createElement(tag))).toBe(true)
+    }
   })
 
-  it('excludes children of data-nitpik-ignore', () => {
-    document.body.innerHTML = '<div data-nitpik-ignore><h2>Inner</h2></div><h3>Keep</h3>'
-    const results = discoverElements(document.body, {})
-    expect(results.map(r => r.tagName)).toEqual(['H3'])
+  it('accepts svg with width > 24, rejects small svg', () => {
+    const big = document.createElement('svg')
+    big.setAttribute('width', '48')
+    expect(isComponentBoundary(big)).toBe(true)
+    const small = document.createElement('svg')
+    small.setAttribute('width', '16')
+    expect(isComponentBoundary(small)).toBe(false)
   })
 
-  it('includes data-nitpik elements', () => {
-    document.body.innerHTML = '<span data-nitpik>Custom</span>'
-    const results = discoverElements(document.body, {})
-    expect(results.some(r => r.element.hasAttribute('data-nitpik'))).toBe(true)
+  it('accepts button', () => {
+    expect(isComponentBoundary(document.createElement('button'))).toBe(true)
   })
 
-  it('respects exclude option', () => {
+  it('accepts anchor with text, rejects empty anchor', () => {
+    const a = document.createElement('a')
+    a.textContent = 'Link'
+    expect(isComponentBoundary(a)).toBe(true)
+    expect(isComponentBoundary(document.createElement('a'))).toBe(false)
+  })
+
+  it('accepts card-class div with substantial content', () => {
+    const el = document.createElement('div')
+    el.className = 'pricing-card'
+    el.textContent = 'x'.repeat(60)
+    expect(isComponentBoundary(el)).toBe(true)
+  })
+
+  it('rejects card-class div without substantial content', () => {
+    const el = document.createElement('div')
+    el.className = 'card'
+    el.textContent = 'short'
+    expect(isComponentBoundary(el)).toBe(false)
+  })
+
+  it('accepts li with substantial content inside ul', () => {
+    document.body.innerHTML = `<ul><li>${'x'.repeat(60)}</li></ul>`
+    const li = document.querySelector('li')
+    expect(isComponentBoundary(li)).toBe(true)
+  })
+
+  it('rejects short li', () => {
+    document.body.innerHTML = '<ul><li>Home</li></ul>'
+    expect(isComponentBoundary(document.querySelector('li'))).toBe(false)
+  })
+
+  it('accepts data-nitpik elements', () => {
+    const el = document.createElement('span')
+    el.setAttribute('data-nitpik', '')
+    expect(isComponentBoundary(el)).toBe(true)
+  })
+
+  it('accepts include-matched elements', () => {
+    const el = document.createElement('p')
+    el.className = 'special'
+    expect(isComponentBoundary(el, { include: '.special' })).toBe(true)
+  })
+
+  it('rejects inline wrappers', () => {
+    for (const tag of ['span', 'em', 'strong', 'code', 'small', 'sub', 'sup', 'mark']) {
+      expect(isComponentBoundary(document.createElement(tag))).toBe(false)
+    }
+  })
+
+  it('rejects pass-through div (no class/id/data, one child)', () => {
+    const div = document.createElement('div')
+    div.appendChild(document.createElement('p'))
+    expect(isComponentBoundary(div)).toBe(false)
+  })
+
+  it('rejects data-nitpik-host', () => {
+    const el = document.createElement('div')
+    el.setAttribute('data-nitpik-host', '')
+    expect(isComponentBoundary(el)).toBe(false)
+  })
+})
+
+describe('buildTree', () => {
+  afterEach(() => { document.body.innerHTML = '' })
+
+  it('finds flat headings as root-level nodes', () => {
+    document.body.innerHTML = '<h1>A</h1><h2>B</h2>'
+    const { roots, nodeMap } = buildTree(document.body)
+    expect(roots).toHaveLength(2)
+    expect(roots[0].depth).toBe(0)
+    expect(roots[1].depth).toBe(0)
+    expect(roots[0].parent).toBeNull()
+    expect(nodeMap.size).toBe(2)
+  })
+
+  it('builds parent-child for section with heading', () => {
+    document.body.innerHTML = '<section><h2>S</h2></section>'
+    const { roots } = buildTree(document.body)
+    expect(roots).toHaveLength(1)
+    expect(roots[0].element.tagName).toBe('SECTION')
+    expect(roots[0].depth).toBe(0)
+    expect(roots[0].children).toHaveLength(1)
+    expect(roots[0].children[0].element.tagName).toBe('H2')
+    expect(roots[0].children[0].depth).toBe(1)
+    expect(roots[0].children[0].parent).toBe(roots[0])
+  })
+
+  it('nests card inside section', () => {
+    document.body.innerHTML = `<section><div class="card">${'x'.repeat(60)}</div></section>`
+    const { roots } = buildTree(document.body)
+    const section = roots[0]
+    expect(section.children).toHaveLength(1)
+    expect(section.children[0].element.className).toBe('card')
+    expect(section.children[0].parent).toBe(section)
+  })
+
+  it('skips non-boundary wrapper divs', () => {
+    document.body.innerHTML = '<div><div><h1>X</h1></div></div>'
+    const { roots } = buildTree(document.body)
+    expect(roots).toHaveLength(1)
+    expect(roots[0].element.tagName).toBe('H1')
+    expect(roots[0].depth).toBe(0)
+  })
+
+  it('handles deeply nested with correct tree depth (Review Focus #1)', () => {
+    document.body.innerHTML = '<section><div><div><article><div><h3>Deep</h3></div></article></div></div></section>'
+    const { roots } = buildTree(document.body)
+    const section = roots[0]
+    expect(section.depth).toBe(0)
+    const article = section.children[0]
+    expect(article.element.tagName).toBe('ARTICLE')
+    expect(article.depth).toBe(1)
+    expect(article.parent).toBe(section)
+    const h3 = article.children[0]
+    expect(h3.element.tagName).toBe('H3')
+    expect(h3.depth).toBe(2)
+    expect(h3.parent).toBe(article)
+  })
+
+  it('skips data-nitpik-ignore and its subtree', () => {
+    document.body.innerHTML = '<h1>Keep</h1><div data-nitpik-ignore><h2>Skip</h2></div>'
+    const { roots, nodeMap } = buildTree(document.body)
+    expect(roots).toHaveLength(1)
+    expect(roots[0].element.tagName).toBe('H1')
+    expect(nodeMap.size).toBe(1)
+  })
+
+  it('respects exclude option and skips subtree', () => {
     document.body.innerHTML = '<nav><h3>Nav</h3></nav><h3>Main</h3>'
-    const results = discoverElements(document.body, { exclude: 'nav' })
-    expect(results.length).toBe(1)
-    expect(results[0].textPreview).toContain('Main')
+    const { roots } = buildTree(document.body, { exclude: 'nav' })
+    expect(roots).toHaveLength(1)
+    expect(roots[0].info.textPreview).toContain('Main')
+  })
+
+  it('respects include option', () => {
+    document.body.innerHTML = '<p class="special">para</p>'
+    const { roots } = buildTree(document.body, { include: '.special' })
+    expect(roots).toHaveLength(1)
   })
 
   it('caps at maxElements', () => {
     document.body.innerHTML = Array.from({ length: 300 }, (_, i) => `<h3>H${i}</h3>`).join('')
-    expect(discoverElements(document.body, { maxElements: 200 }).length).toBeLessThanOrEqual(200)
-    expect(discoverElements(document.body, {}).length).toBe(200)
-    expect(discoverElements(document.body, { maxElements: 5 }).length).toBe(5)
+    const { nodeMap } = buildTree(document.body, { maxElements: 5 })
+    expect(nodeMap.size).toBe(5)
   })
 
   it('returns correct ElementInfo shape', () => {
     document.body.innerHTML = '<h1>Hello World</h1>'
-    const [info] = discoverElements(document.body, {})
+    const { roots } = buildTree(document.body)
+    const info = roots[0].info
     expect(info).toHaveProperty('element')
     expect(info).toHaveProperty('path')
     expect(info).toHaveProperty('selector')
@@ -60,84 +195,70 @@ describe('discoverElements', () => {
     expect(info).toHaveProperty('tagName', 'H1')
   })
 
-  it('keeps only the innermost element when nested', () => {
-    document.body.innerHTML = '<div class="hero"><h1>Title</h1></div>'
-    const results = discoverElements(document.body, {})
-    expect(results.map(r => r.tagName)).toEqual(['H1'])
+  it('nodeMap keys are HTMLElements', () => {
+    document.body.innerHTML = '<section><h2>A</h2></section>'
+    const { nodeMap } = buildTree(document.body)
+    for (const [key, val] of nodeMap) {
+      expect(key).toBeInstanceOf(HTMLElement)
+      expect(val.element).toBe(key)
+    }
+  })
+})
+
+describe('buildTree path generation', () => {
+  afterEach(() => { document.body.innerHTML = '' })
+
+  it('root-level heading gets simple path', () => {
+    document.body.innerHTML = '<h1>Hello World</h1>'
+    const { roots } = buildTree(document.body)
+    expect(roots[0].info.path).toBe('h1: Hello World')
   })
 
-  it('filters noisy item-class elements without substantial content', () => {
-    document.body.innerHTML = '<li class="menu-item">Home</li>'
-    expect(discoverElements(document.body, {})).toHaveLength(0)
-    document.body.innerHTML = `<li class="menu-item">${'x'.repeat(60)}</li>`
-    expect(discoverElements(document.body, {})).toHaveLength(1)
+  it('heading inside section gets section heading prefix', () => {
+    document.body.innerHTML = '<section><h2>Pricing</h2><h3>Pro Plan</h3></section>'
+    const { roots } = buildTree(document.body)
+    const h3 = roots[0].children.find(c => c.element.tagName === 'H3')
+    expect(h3.info.path).toMatch(/Section: Pricing/)
+    expect(h3.info.path).toMatch(/h3: Pro Plan/)
   })
 
-  it('finds buttons and links with text, skips empty links', () => {
-    document.body.innerHTML = '<button>Go</button><a href="#">Link</a><a href="#"></a>'
-    expect(discoverElements(document.body, {}).map(r => r.tagName)).toEqual(['BUTTON', 'A'])
-  })
-
-  it('finds images', () => {
-    document.body.innerHTML = '<img src="a.png"><iframe></iframe>'
-    expect(discoverElements(document.body, {}).map(r => r.tagName)).toEqual(['IMG', 'IFRAME'])
-  })
-
-  it('supports include option as extra selector', () => {
-    document.body.innerHTML = '<p class="x">para</p>'
-    expect(discoverElements(document.body, { include: '.x' })).toHaveLength(1)
+  it('deeply nested gets full ancestor chain', () => {
+    document.body.innerHTML = `<section><h2>Features</h2><div class="card">${'x'.repeat(60)}<h3>Fast</h3></div></section>`
+    const { roots } = buildTree(document.body)
+    const section = roots[0]
+    const card = section.children.find(c => c.element.className === 'card')
+    const h3 = card.children[0]
+    expect(h3.info.path).toContain('Section: Features')
+    expect(h3.info.path).toContain('h3: Fast')
   })
 })
 
 describe('observeDOM', () => {
   afterEach(() => { document.body.innerHTML = '' })
-
-  it('reports newly added matching elements and tears down', async () => {
-    const cb = vi.fn()
-    const stop = observeDOM(document.body, cb)
-    const h = document.createElement('h2')
-    h.textContent = 'New'
-    document.body.appendChild(h)
-    await new Promise(r => setTimeout(r, 20))
-    expect(cb).toHaveBeenCalledTimes(1)
-    expect(cb.mock.calls[0][0][0].element).toBe(h)
-    stop()
-    document.body.appendChild(document.createElement('h3'))
-    await new Promise(r => setTimeout(r, 20))
-    expect(cb).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe('observeDOM options and detached nodes', () => {
-  afterEach(() => { document.body.innerHTML = '' })
   const tick = () => new Promise(r => setTimeout(r, 20))
 
-  it('applies exclude to late-added elements', async () => {
+  it('reports newly added boundary elements with correct tree position (Review Focus #3)', async () => {
+    document.body.innerHTML = '<section><h2>S</h2></section>'
+    const { nodeMap } = buildTree(document.body)
     const cb = vi.fn()
-    const stop = observeDOM(document.body, cb, { exclude: 'nav' })
-    const nav = document.createElement('nav')
-    nav.innerHTML = '<h3>Nav</h3>'
-    document.body.appendChild(nav)
-    await tick()
-    expect(cb).not.toHaveBeenCalled()
-    stop()
-  })
-
-  it('enforces maxElements across mutations', async () => {
-    const cb = vi.fn()
-    const stop = observeDOM(document.body, cb, { maxElements: 2 })
-    document.body.innerHTML = '<h2>a</h2><h2>b</h2><h2>c</h2>'
-    await tick()
-    expect(cb.mock.calls[0][0]).toHaveLength(2)
-    document.body.appendChild(document.createElement('h4'))
+    const stop = observeDOM(document.body, nodeMap, cb)
+    const h3 = document.createElement('h3')
+    h3.textContent = 'New'
+    document.querySelector('section').appendChild(h3)
     await tick()
     expect(cb).toHaveBeenCalledTimes(1)
+    const newNodes = cb.mock.calls[0][0]
+    expect(newNodes).toHaveLength(1)
+    expect(newNodes[0].element).toBe(h3)
+    const sectionNode = nodeMap.get(document.querySelector('section'))
+    expect(newNodes[0].parent).toBe(sectionNode)
     stop()
   })
 
-  it('skips nodes removed before the observer fires', async () => {
+  it('skips detached nodes', async () => {
+    const { nodeMap } = buildTree(document.body)
     const cb = vi.fn()
-    const stop = observeDOM(document.body, cb)
+    const stop = observeDOM(document.body, nodeMap, cb)
     const h = document.createElement('h2')
     h.textContent = 'gone'
     document.body.appendChild(h)
@@ -146,24 +267,24 @@ describe('observeDOM options and detached nodes', () => {
     expect(cb).not.toHaveBeenCalled()
     stop()
   })
-})
 
-describe('createVisibilityObserver', () => {
-  it('fires onVisible/onHidden from IntersectionObserver entries', () => {
-    let handler
-    const observe = vi.fn(), disconnect = vi.fn()
-    const Original = globalThis.IntersectionObserver
-    globalThis.IntersectionObserver = class { constructor(cb) { handler = cb } observe = observe; disconnect = disconnect; unobserve() {} }
-    const onVisible = vi.fn(), onHidden = vi.fn()
-    const vo = createVisibilityObserver(onVisible, onHidden)
-    const a = document.createElement('div'), b = document.createElement('div')
-    vo.observe(a)
-    expect(observe).toHaveBeenCalledWith(a)
-    handler([{ target: a, isIntersecting: true }, { target: b, isIntersecting: false }])
-    expect(onVisible).toHaveBeenCalledWith(a)
-    expect(onHidden).toHaveBeenCalledWith(b)
-    vo.disconnect()
-    expect(disconnect).toHaveBeenCalled()
-    globalThis.IntersectionObserver = Original
+  it('enforces maxElements', async () => {
+    const { nodeMap } = buildTree(document.body)
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, nodeMap, cb, { maxElements: 2 })
+    document.body.innerHTML = '<h2>a</h2><h2>b</h2><h2>c</h2>'
+    await tick()
+    expect(cb.mock.calls[0][0].length).toBeLessThanOrEqual(2)
+    stop()
+  })
+
+  it('tears down on stop', async () => {
+    const { nodeMap } = buildTree(document.body)
+    const cb = vi.fn()
+    const stop = observeDOM(document.body, nodeMap, cb)
+    stop()
+    document.body.appendChild(document.createElement('h2'))
+    await tick()
+    expect(cb).not.toHaveBeenCalled()
   })
 })

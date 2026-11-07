@@ -1,5 +1,7 @@
+const SECTION_TAGS = new Set([
+  'SECTION', 'ARTICLE', 'ASIDE', 'NAV', 'HEADER', 'FOOTER', 'MAIN',
+])
 const HEADING_SELECTOR = 'h1,h2,h3,h4,h5,h6'
-const SECTION_TAGS = ['SECTION', 'ARTICLE', 'HEADER']
 
 export function getTextPreview(el, maxLen) {
   const limit = maxLen === undefined ? 40 : maxLen
@@ -8,26 +10,28 @@ export function getTextPreview(el, maxLen) {
   return text.length > limit ? text.slice(0, limit) + '...' : text
 }
 
-function findSectionHeading(el) {
-  let node = el.parentElement
-  while (node && node !== document.body) {
-    if (SECTION_TAGS.indexOf(node.tagName) !== -1) {
-      const heading = node.querySelector(HEADING_SELECTOR)
-      if (heading && heading !== el && !heading.contains(el)) {
-        return getTextPreview(heading)
-      }
+function segmentLabel(node) {
+  const el = node.element
+  const tag = el.tagName.toLowerCase()
+  if (SECTION_TAGS.has(el.tagName)) {
+    const heading = el.querySelector(HEADING_SELECTOR)
+    if (heading) {
+      const text = getTextPreview(heading)
+      if (text) return 'Section: ' + text
     }
-    node = node.parentElement
   }
-  return ''
+  const preview = getTextPreview(el)
+  return preview ? tag + ': ' + preview : tag
 }
 
-export function generatePath(el) {
-  const tag = el.tagName.toLowerCase()
-  const preview = getTextPreview(el)
-  const label = preview ? tag + ': ' + preview : tag
-  const heading = findSectionHeading(el)
-  return heading ? 'Section: ' + heading + ' > ' + label : label
+export function generateTreePath(node) {
+  const segments = []
+  let current = node
+  while (current) {
+    segments.unshift(segmentLabel(current))
+    current = current.parent
+  }
+  return segments.join(' > ')
 }
 
 function segmentFor(el) {
