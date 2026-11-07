@@ -10,7 +10,7 @@ describe('injectHtml', () => {
   it('inserts before </body> with attributes', () => {
     const r = injectHtml('<html><body><h1>Hi</h1></body></html>', { src: '../dist/nitpik.js', mode: 'collect', color: '#f00', reviewer: 'Sam' })
     expect(r.changed).toBe(true)
-    expect(r.html).toContain('<script src="../../dist/nitpik.js" data-mode="collect" data-color="#f00" data-reviewer="Sam"></script></body>')
+    expect(r.html).toContain('<script src="../dist/nitpik.js" data-mode="collect" data-color="#f00" data-reviewer="Sam"></script></body>')
     expect(r.attributes).toEqual({ mode: 'collect', color: '#f00', reviewer: 'Sam' })
   })
   it('falls back to </html> then append', () => {
