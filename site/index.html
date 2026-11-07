@@ -3,109 +3,159 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NitPik: Nitpick any page. One script tag.</title>
-<meta name="description" content="NitPik lets reviewers click any element on a web page and leave a precise comment. One script tag, open source.">
+<title>NitPik — Nitpick any page. One script tag.</title>
+<meta name="description" content="NitPik lets reviewers click any element on a web page and leave a precise comment. One script tag, zero dependencies, open source.">
 <style>
 :root{--accent:#F59E0B;--accent-dark:#B45309;--text:#1E293B;--muted:#64748B;--bg:#F8FAFC;--surface:#FFFFFF;--line:#E2E8F0;--code-bg:#1E293B;--code-text:#F1F5F9;color-scheme:light}
-*{box-sizing:border-box}
+*{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Segoe UI",system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--text);font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:960px;margin:0 auto;padding:0 16px}
-section{padding:56px 0;border-top:1px solid var(--line)}
-section:first-of-type{border-top:0}
-h1,h2,h3{line-height:1.15;margin:0 0 .5em;letter-spacing:-.02em}
-h2{font-size:clamp(1.6rem,4.5vw,2.2rem);max-width:22ch}
-h3{font-size:1.1rem;letter-spacing:-.01em}
-p{margin:0 0 1em;max-width:62ch}
+section{padding:64px 0}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,4.5vw,2.2rem);margin-bottom:.5em}
+h3{font-size:1.1rem;letter-spacing:-.01em;margin-bottom:.35em}
+p{max-width:62ch}
 a{color:var(--accent-dark);text-underline-offset:3px}
 a:hover{color:var(--text)}
-.kicker{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-dark);margin:0 0 12px}
-.icon{display:inline-flex;width:28px;height:28px;color:var(--accent-dark)}
-.icon svg{width:100%;height:100%}
+.kicker{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:12px}
+.icon-inline{display:inline-flex;width:24px;height:24px;color:currentColor;vertical-align:middle;flex-shrink:0}
+.icon-inline svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .muted{color:var(--muted)}
-code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-size:.9em}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.9em}
+
 /* hero */
-.hero{padding:72px 0 56px;background:#FFFBEB;border-bottom:1px solid #FDE68A}
-.wordmark{font-size:clamp(3rem,12vw,5.5rem);font-weight:800;letter-spacing:-.045em;line-height:1;margin:0 0 16px;color:var(--text)}
-.wordmark span{color:var(--accent);box-shadow:inset 0 -.14em 0 var(--accent)}
-.tagline{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:600;margin:0 0 12px;max-width:none}
-.sub{font-size:1.1rem;color:#475569;max-width:56ch}
+.hero{padding:80px 0 64px;background:#FFFBEB;border-bottom:2px solid #FDE68A}
+.hero-inner{display:flex;flex-direction:column;gap:24px}
+.wordmark{font-size:clamp(3rem,12vw,5.5rem);font-weight:800;letter-spacing:-.045em;line-height:1;color:var(--text)}
+.wordmark em{font-style:normal;color:var(--accent)}
+.tagline{font-size:clamp(1.2rem,3.5vw,1.6rem);font-weight:600;color:#475569}
+.sub{font-size:1.05rem;color:#64748B;margin-bottom:8px}
+.hero-stats{display:flex;flex-wrap:wrap;gap:24px;margin-top:8px}
+.stat{font-size:.85rem;color:var(--muted);font-weight:500}
+.stat strong{color:var(--text);font-size:1.1rem;display:block}
+
 /* code blocks */
-.codebox{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:8px;margin:24px 0 0}
-.codebox pre{margin:0;padding:18px 96px 18px 18px;overflow-x:auto;white-space:pre;font-family:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-size:.88rem;line-height:1.6}
-.codebox.big pre{font-size:1rem;padding-top:22px;padding-bottom:22px}
-.btn{font:inherit;font-weight:600;font-size:.85rem;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;background:var(--accent);color:#1E293B}
-.btn:hover{background:#D97706}
-.btn:focus-visible{outline:3px solid var(--text);outline-offset:2px}
-.copy{position:absolute;top:12px;right:12px}
-.btn-line{display:inline-block;text-decoration:none;background:var(--surface);border:2px solid var(--text);color:var(--text);padding:8px 16px;border-radius:6px;font-weight:600}
-.btn-line:hover{background:var(--text);color:#fff}
-/* grids */
-.grid{display:grid;gap:16px;margin-top:28px}
+.codebox{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:8px;overflow:hidden}
+.codebox pre{margin:0;padding:18px 72px 18px 18px;overflow-x:auto;white-space:pre;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.88rem;line-height:1.6}
+.codebox.big pre{font-size:1rem;padding:22px 72px 22px 22px}
+.copy-btn{position:absolute;top:12px;right:12px;font:inherit;font-weight:600;font-size:.8rem;border:0;border-radius:5px;padding:6px 12px;cursor:pointer;background:rgba(255,255,255,.12);color:#CBD5E1;transition:background .15s}
+.copy-btn:hover{background:rgba(255,255,255,.2)}
+.copy-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* buttons */
+.btn-solid{display:inline-block;font:inherit;font-weight:600;font-size:.9rem;border:0;border-radius:6px;padding:10px 20px;cursor:pointer;background:var(--accent);color:#1E293B;text-decoration:none;transition:background .15s}
+.btn-solid:hover{background:#D97706;color:#1E293B}
+.btn-outline{display:inline-block;font:inherit;font-weight:600;font-size:.9rem;text-decoration:none;background:var(--surface);border:2px solid var(--text);color:var(--text);padding:8px 18px;border-radius:6px;transition:background .15s,color .15s}
+.btn-outline:hover{background:var(--text);color:#fff}
+
+/* divider */
+.section-rule{border:0;height:1px;background:var(--line)}
+
+/* grid */
+.grid{display:grid;gap:16px;margin-top:24px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px}
 .card p{margin:0;color:#475569;font-size:.95rem}
-.card .icon{margin-bottom:14px}
-.card pre{margin:14px 0 0;background:#F1F5F9;border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:.8rem;line-height:1.5;font-family:ui-monospace,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace}
-.step-n{font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block}
+.card .card-icon{width:28px;height:28px;color:var(--accent-dark);margin-bottom:14px}
+.card .card-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card pre{margin-top:14px;background:#F1F5F9;border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:.8rem;line-height:1.5;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.step-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:block}
+
 /* problem */
-.problem{display:grid;gap:20px;align-items:start}
-.problem .icon{width:48px;height:48px}
-.quote{border-left:4px solid var(--accent);padding-left:16px;font-style:italic;color:#475569}
-/* callout */
+.problem-content{max-width:640px}
+.quote{border-left:4px solid var(--accent);padding:12px 0 12px 16px;font-style:italic;color:#475569;margin:16px 0}
+
+/* callout (dark) */
 .callout{background:var(--text);color:#F8FAFC;border-radius:10px;padding:32px 24px;border-left:6px solid var(--accent)}
-.callout h2{color:#fff;max-width:none;margin-bottom:.35em}
-.callout p{margin:0;color:#CBD5E1}
-/* oss */
-.oss{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:24px 0}
-.badge{display:inline-flex;align-items:center;gap:8px;border:2px solid var(--text);border-radius:6px;padding:6px 12px;font-weight:700;background:var(--surface)}
-.badge .icon{width:22px;height:22px;color:var(--text)}
+.callout h2{color:#fff;margin-bottom:.35em}
+.callout p{color:#CBD5E1}
+.callout .btn-solid{margin-top:16px}
+
+/* scroll animation */
+.scroll-anim{padding:80px 0;background:#FFFBEB}
+.scroll-anim h2{text-align:center;margin-bottom:8px}
+.scroll-anim .sub-center{text-align:center;color:var(--muted);margin:0 auto 32px;max-width:48ch}
+.typewriter-wrap{max-width:700px;margin:0 auto}
+.typewriter-box{background:var(--code-bg);border-radius:10px;padding:28px 24px;min-height:72px;position:relative}
+.typewriter-box pre{color:var(--code-text);font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:clamp(.85rem,2.5vw,1.05rem);line-height:1.7;white-space:pre-wrap;word-break:break-all}
+.typewriter-box .cursor{display:inline-block;width:2px;height:1.2em;background:var(--accent);vertical-align:text-bottom;animation:blink .8s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.typewriter-done{text-align:center;margin-top:20px;font-size:1.15rem;font-weight:700;color:var(--text);opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease}
+.typewriter-done.visible{opacity:1;transform:translateY(0)}
+
+/* AI section */
+.ai-grid{display:grid;gap:12px;margin-top:20px}
+.ai-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
+.ai-card h3{font-size:.95rem;margin-bottom:2px}
+.ai-card p{font-size:.88rem;color:#64748B;margin:0}
+.ai-card .card-icon{width:22px;height:22px;flex-shrink:0;margin-top:2px;color:var(--accent-dark)}
+.ai-card .card-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* open source */
+.oss-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
+
 /* cloud */
 .cloud{background:var(--surface);border:1px dashed #CBD5E1;border-radius:10px;padding:32px 24px}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#FEF3C7;color:#92400E;padding:3px 10px;border-radius:4px;margin-bottom:12px}
-.cloud ul{padding-left:20px;margin:0 0 20px;color:#475569}
+.cloud ul{padding-left:20px;margin:12px 0 20px;color:#475569}
+.cloud li{margin-bottom:4px}
 form.signup{display:flex;flex-direction:column;gap:10px;max-width:440px}
 form.signup input{font:inherit;padding:10px 12px;border:1px solid #94A3B8;border-radius:6px;background:#fff;color:var(--text)}
 form.signup input:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
-.note{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+.note{font-size:.8rem;color:var(--muted);margin-top:8px}
+
+/* footer */
 footer{border-top:1px solid var(--line);padding:32px 0 48px;color:var(--muted);font-size:.9rem}
 footer .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
 footer nav{display:flex;gap:20px}
+
 @media(min-width:640px){
+  .hero{padding:96px 0 72px}
   section{padding:80px 0}
   .grid.three{grid-template-columns:repeat(3,1fr)}
-  .problem{grid-template-columns:auto 1fr;gap:28px}
+  .ai-grid{grid-template-columns:repeat(3,1fr)}
   .callout{padding:40px}
   form.signup{flex-direction:row}
   form.signup input{flex:1}
 }
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cursor{animation:none !important}.typewriter-done{transition:none !important}}
 </style>
 </head>
 <body>
-<header class="hero">
-  <div class="wrap">
-    <h1 class="wordmark">Nit<span>Pik</span></h1>
-    <p class="tagline">Nitpick any page. One script tag.</p>
-    <p class="sub">Reviewers hover any element, click, and leave a comment pinned to that exact spot. You get the selector, the text and the feedback, ready to paste into your tracker or your AI assistant.</p>
-    <div class="codebox">
-      <pre id="hero-code">&lt;script src="https://unpkg.com/nitpik"&gt;&lt;/script&gt;</pre>
-      <button class="btn copy" type="button" data-copy="hero-code">Copy</button>
+
+<header class="hero" data-nitpik-ignore>
+  <div class="wrap hero-inner">
+    <div>
+      <h1 class="wordmark">Nit<em>Pik</em></h1>
+      <p class="tagline">Nitpick any page. One script tag.</p>
+      <p class="sub">Reviewers hover any element on your web page, click, and leave a comment pinned to that exact spot. You get the CSS selector, the DOM path, and the feedback &mdash; ready to paste into your tracker or AI assistant.</p>
+    </div>
+    <div class="codebox big">
+      <pre id="hero-code">&lt;script src="https://cdn.jsdelivr.net/npm/nitpik"&gt;&lt;/script&gt;</pre>
+      <button class="copy-btn" type="button" data-copy="hero-code">Copy</button>
+    </div>
+    <div class="hero-stats">
+      <span class="stat"><strong>&lt; 7 KB</strong>gzipped</span>
+      <span class="stat"><strong>0</strong>dependencies</span>
+      <span class="stat"><strong>MIT</strong>licensed</span>
     </div>
   </div>
 </header>
 
 <main>
+
 <section id="problem">
-  <div class="wrap problem">
-    <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg></span>
-    <div>
+  <div class="wrap">
+    <div class="problem-content">
       <p class="kicker">The problem</p>
       <h2>Your stakeholders screenshot and say &ldquo;the thing feels wrong&rdquo;</h2>
-      <p class="quote">&ldquo;Can you make that bit a little more... you know. Also the other thing, near the top.&rdquo;</p>
+      <blockquote class="quote">&ldquo;Can you make that bit a little more&hellip; you know. Also the other thing, near the top.&rdquo;</blockquote>
       <p>Screenshots lose the context. Chat threads lose the element. You end up guessing which button, which heading, which card. NitPik attaches every comment to the exact element it is about.</p>
     </div>
   </div>
 </section>
+
+<hr class="section-rule">
 
 <section id="how">
   <div class="wrap">
@@ -113,22 +163,22 @@ footer nav{display:flex;gap:20px}
     <h2>Three steps. No account, no build step.</h2>
     <div class="grid three">
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></span>
-        <span class="step-n">Step 1</span>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></div>
+        <span class="step-label">Step 1</span>
         <h3>Add one script tag</h3>
-        <p>Paste it before <code>&lt;/body&gt;</code>. NitPik starts by itself and adds nothing else to your markup.</p>
+        <p>Paste it before <code>&lt;/body&gt;</code>. NitPik starts by itself and adds nothing to your markup.</p>
       </div>
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg></span>
-        <span class="step-n">Step 2</span>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg></div>
+        <span class="step-label">Step 2</span>
         <h3>Hover any element</h3>
-        <p>A small comment trigger appears on headings, cards, buttons, images and more. Skip any part with <code>data-nitpik-ignore</code>.</p>
+        <p>A small trigger appears on headings, sections, cards, buttons, images, and more. Smart tree detection finds the right level.</p>
       </div>
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 9-3 3 3 3"/><path d="m14 15 3-3-3-3"/><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg></span>
-        <span class="step-n">Step 3</span>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M7 7h8"/></svg></div>
+        <span class="step-label">Step 3</span>
         <h3>Click and comment</h3>
-        <p>Type the feedback. NitPik records the CSS selector, the DOM path and the element text alongside it.</p>
+        <p>Type the feedback. NitPik records the CSS selector, the DOM path, and the element text alongside it.</p>
       </div>
     </div>
   </div>
@@ -138,29 +188,29 @@ footer nav{display:flex;gap:20px}
   <div class="wrap">
     <div class="callout">
       <p class="kicker" style="color:var(--accent)">Live demo</p>
-      <h2>This page runs NitPik.</h2>
-      <p>Try it. Hover any section and click the comment icon. Your comment is copied to the clipboard as Markdown.</p>
+      <h2>This page runs NitPik right now.</h2>
+      <p>Hover any section below the hero and click the comment icon. Your comment is copied to the clipboard as Markdown. Try it on any heading, card, or button.</p>
     </div>
   </div>
 </section>
 
-<section id="vibe">
+<hr class="section-rule">
+
+<section class="scroll-anim" id="implement" data-nitpik-ignore>
   <div class="wrap">
-    <p class="kicker">For vibe coders</p>
-    <h2>You built it with AI. Now get real human feedback.</h2>
-    <p>Your assistant can ship a page in minutes. Knowing what a person thinks of it takes longer. NitPik closes the loop: the MCP server lets your AI coding assistant add the script to a page, read the comments back, and strip the script when review is done.</p>
-    <div class="grid three">
-      <div class="card"><h3>nitpik_inject</h3><p>Adds the script tag to an HTML file so reviewers can start commenting.</p></div>
-      <div class="card"><h3>nitpik_read</h3><p>Reads the saved comments, each with its selector, so the assistant can fix the right element.</p></div>
-      <div class="card"><h3>nitpik_strip</h3><p>Removes the script tag when the review round is finished.</p></div>
+    <p class="kicker" style="text-align:center">Implementation</p>
+    <h2>The entire setup</h2>
+    <p class="sub-center">Add one line to your HTML. That is the whole integration.</p>
+    <div class="typewriter-wrap">
+      <div class="typewriter-box" id="tw-box">
+        <pre><span id="tw-target"></span><span class="cursor" id="tw-cursor"></span></pre>
+      </div>
+      <p class="typewriter-done" id="tw-done">That&rsquo;s it. You&rsquo;re done.</p>
     </div>
-    <div class="codebox">
-      <pre id="mcp-code">npx nitpik-mcp</pre>
-      <button class="btn copy" type="button" data-copy="mcp-code">Copy</button>
-    </div>
-    <p class="note">Register it as a stdio MCP server in your assistant. The repo also ships a skill that walks it through the setup.</p>
   </div>
 </section>
+
+<hr class="section-rule">
 
 <section id="modes">
   <div class="wrap">
@@ -168,57 +218,109 @@ footer nav{display:flex;gap:20px}
     <h2>Send feedback wherever it needs to go.</h2>
     <div class="grid three">
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v4"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/></svg></span>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v4"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/></svg></div>
         <h3>Clipboard</h3>
-        <p>The default. Each comment is copied as Markdown, ready to paste into a chat, an issue or a prompt.</p>
+        <p>The default. Each comment is copied as Markdown, ready to paste into a chat, an issue, or a prompt.</p>
         <pre>data-mode="clipboard"</pre>
       </div>
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M12 17v-6"/><path d="M9.5 14.5l2.5 2.5l2.5 -2.5"/></svg></span>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M12 17v-6"/><path d="M9.5 14.5l2.5 2.5l2.5 -2.5"/></svg></div>
         <h3>Collect</h3>
         <p>Comments pile up in the browser. Export them all as a Markdown or JSON file in one click.</p>
         <pre>data-mode="collect"</pre>
       </div>
       <div class="card">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 17c2 0 2.8-1 2.8-2.8V10c0-2 1-3.3 3.2-3"/><path d="M9 11.2h5.7"/></svg></span>
-        <h3>Callback</h3>
-        <p>Handle each comment in your own code and send it to any tracker or backend.</p>
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg></div>
+        <h3>Callback / API</h3>
+        <p>Handle each comment in your own code or POST to any endpoint. Send feedback to your tracker or backend.</p>
         <pre>NitPik.on('comment', fn)</pre>
       </div>
     </div>
   </div>
 </section>
 
-<section id="install">
+<hr class="section-rule">
+
+<section id="ai">
   <div class="wrap">
-    <p class="kicker">Install</p>
-    <h2>One script tag.</h2>
-    <p>That is the whole setup. Add attributes to change the mode, the accent colour or the reviewer name.</p>
-    <div class="codebox big">
-      <pre id="main-code">&lt;script src="https://unpkg.com/nitpik"
-        data-mode="clipboard"
-        data-color="#F59E0B"&gt;&lt;/script&gt;</pre>
-      <button class="btn copy" type="button" data-copy="main-code">Copy</button>
+    <p class="kicker">For AI-assisted development</p>
+    <h2>Your AI assistant adds NitPik in one prompt.</h2>
+    <p style="margin-bottom:20px">Ship a page with AI, then get real human feedback on it. The MCP server lets your coding assistant inject the script, read comments back, and strip it when the review is done.</p>
+    <div class="ai-grid">
+      <div class="ai-card">
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></div>
+        <div>
+          <h3>nitpik_inject</h3>
+          <p>Adds the script tag to an HTML file so reviewers can start commenting.</p>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg></div>
+        <div>
+          <h3>nitpik_read</h3>
+          <p>Reads saved comments with their CSS selectors, so the assistant fixes the right element.</p>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="card-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.7.7 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="m9 11 2 2 4-4"/></svg></div>
+        <div>
+          <h3>nitpik_strip</h3>
+          <p>Removes the script tag when the review round is finished. Clean output.</p>
+        </div>
+      </div>
     </div>
-    <p class="note" style="margin-top:20px">Prefer a package manager?</p>
-    <div class="codebox">
-      <pre id="npm-code">npm install nitpik</pre>
-      <button class="btn copy" type="button" data-copy="npm-code">Copy</button>
+    <div class="codebox" style="margin-top:20px">
+      <pre id="mcp-code"># Register as MCP server in your AI assistant
+npx nitpik-mcp
+
+# Or use the Claude Code skill
+# Just paste the GitHub repo link in a new session</pre>
+      <button class="copy-btn" type="button" data-copy="mcp-code">Copy</button>
     </div>
   </div>
 </section>
+
+<hr class="section-rule">
+
+<section id="install">
+  <div class="wrap">
+    <p class="kicker">Install</p>
+    <h2>One script tag. That is the whole setup.</h2>
+    <p style="margin-bottom:20px">Add attributes to change the mode, the accent colour, or the reviewer name.</p>
+    <div class="codebox big">
+      <pre id="main-code">&lt;script src="https://cdn.jsdelivr.net/npm/nitpik"
+  data-mode="clipboard"
+  data-color="#F59E0B"&gt;&lt;/script&gt;</pre>
+      <button class="copy-btn" type="button" data-copy="main-code">Copy</button>
+    </div>
+    <p class="note" style="margin-top:16px">Prefer a package manager?</p>
+    <div class="codebox" style="margin-top:8px">
+      <pre id="npm-code">npm install nitpik</pre>
+      <button class="copy-btn" type="button" data-copy="npm-code">Copy</button>
+    </div>
+    <div class="codebox" style="margin-top:8px">
+      <pre id="esm-code">import NitPik from 'nitpik'
+NitPik.init({ mode: 'collect' })</pre>
+      <button class="copy-btn" type="button" data-copy="esm-code">Copy</button>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
 
 <section id="open-source">
   <div class="wrap">
     <p class="kicker">Open source</p>
     <h2>Free forever for local use.</h2>
-    <div class="oss">
-      <span class="badge"><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3a9 9 0 0 1 3.618 17.243l-2.193 -5.602a3 3 0 1 0 -2.849 0l-2.193 5.603a9 9 0 0 1 3.617 -17.244"/></svg></span>MIT License</span>
-      <a class="btn-line" href="https://github.com/dhisattva-ai/nitpik">View on GitHub</a>
+    <p>MIT licensed. Use it on your own pages, fork it, ship it inside your product. No tracking, no network calls in clipboard and collect modes.</p>
+    <div class="oss-row">
+      <a class="btn-outline" href="https://github.com/Dhisattva-AI-Private-Limited/nitpik">View on GitHub</a>
+      <a class="btn-outline" href="https://www.npmjs.com/package/nitpik">npm</a>
     </div>
-    <p>The library is MIT licensed. Use it on your own pages, fork it, ship it inside your product. No tracking, no network calls in clipboard and collect modes.</p>
   </div>
 </section>
+
+<hr class="section-rule">
 
 <section id="cloud">
   <div class="wrap">
@@ -227,43 +329,44 @@ footer nav{display:flex;gap:20px}
       <h2>NitPik Cloud</h2>
       <p>Hosted review pages for teams. The library stays open source.</p>
       <ul>
-        <li>Real-time collaboration, so every reviewer's comments land in one place</li>
-        <li>A dashboard to triage, assign and resolve feedback</li>
+        <li>Real-time collaboration &mdash; every reviewer&rsquo;s comments in one place</li>
+        <li>Dashboard to triage, assign, and resolve feedback</li>
         <li>Slack integration for new comments</li>
       </ul>
       <form class="signup" onsubmit="return false" aria-label="Join the NitPik Cloud waitlist">
         <label for="email" style="position:absolute;left:-9999px">Email address</label>
         <input id="email" type="email" placeholder="you@company.com" autocomplete="email">
-        <button class="btn" type="submit">Notify me</button>
+        <button class="btn-solid" type="submit">Notify me</button>
       </form>
       <p class="note">Sign-up is not live yet. This form does not send anything.</p>
     </div>
   </div>
 </section>
+
 </main>
 
 <footer>
   <div class="wrap">
     <span>Built by Dhisattva AI Pvt Ltd</span>
     <nav aria-label="Footer">
-      <a href="https://github.com/dhisattva-ai/nitpik">GitHub</a>
+      <a href="https://github.com/Dhisattva-AI-Private-Limited/nitpik">GitHub</a>
       <a href="https://www.npmjs.com/package/nitpik">npm</a>
     </nav>
   </div>
 </footer>
 
+<!-- Copy buttons -->
 <script>
 (function(){
-  var buttons=document.querySelectorAll('[data-copy]');
-  Array.prototype.forEach.call(buttons,function(btn){
+  document.querySelectorAll('[data-copy]').forEach(function(btn){
     btn.addEventListener('click',function(){
       var el=document.getElementById(btn.getAttribute('data-copy'));
       var text=el.textContent;
       function done(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)}
       function fallback(){
-        var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+        var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';
         document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');done()}catch(e){btn.textContent='Press Ctrl+C'}
+        try{document.execCommand('copy');done()}catch(e){btn.textContent='Ctrl+C'}
         document.body.removeChild(ta);
       }
       if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done,fallback)}else{fallback()}
@@ -271,78 +374,51 @@ footer nav{display:flex;gap:20px}
   });
 })();
 </script>
+
+<!-- Scroll-triggered typewriter animation -->
 <script>
-var NitPik=(()=>{var L=Object.defineProperty;var bt=Object.getOwnPropertyDescriptor;var wt=Object.getOwnPropertyNames;var vt=Object.prototype.hasOwnProperty;var yt=(e,t)=>{for(var n in t)L(e,n,{get:t[n],enumerable:!0})},kt=(e,t,n,o)=>{if(t&&typeof t=="object"||typeof t=="function")for(let i of wt(t))!vt.call(e,i)&&i!==n&&L(e,i,{get:()=>t[i],enumerable:!(o=bt(t,i))||o.enumerable});return e};var Et=e=>kt(L({},"__esModule",{value:!0}),e);var oe={};yt(oe,{__internals:()=>ee,createEmitter:()=>N,default:()=>ne,destroy:()=>ct,generatePath:()=>M,generateSelector:()=>I,getTextPreview:()=>S,init:()=>j,parseScriptConfig:()=>rt});function N(){let e=new Map;return{on(t,n){e.has(t)||e.set(t,new Set),e.get(t).add(n)},off(t,n){let o=e.get(t);o&&o.delete(n)},emit(t,n){let o=e.get(t);o&&Array.from(o).forEach(function(i){i(n)})}}}var St="h1,h2,h3,h4,h5,h6",Ct=["SECTION","ARTICLE","HEADER"];function S(e,t){let n=t===void 0?40:t,o=(e.textContent||"").replace(/\s+/g," ").trim();return o?o.length>n?o.slice(0,n)+"...":o:""}function Tt(e){let t=e.parentElement;for(;t&&t!==document.body;){if(Ct.indexOf(t.tagName)!==-1){let n=t.querySelector(St);if(n&&n!==e&&!n.contains(e))return S(n)}t=t.parentElement}return""}function M(e){let t=e.tagName.toLowerCase(),n=S(e),o=n?t+": "+n:t,i=Tt(e);return i?"Section: "+i+" > "+o:o}function Ot(e){let t=e.tagName.toLowerCase(),n=e.parentElement;if(!n)return t;let o=Array.prototype.indexOf.call(n.children,e)+1;return t+":nth-child("+o+")"}function B(e,t){let n=[],o=e;for(;o&&o.nodeType===1&&o!==document.documentElement&&n.length<t;){if(o.id&&/^[A-Za-z][\w-]*$/.test(o.id))return n.unshift("#"+o.id),n.join(" > ");n.unshift(Ot(o)),o=o.parentElement}return n.join(" > ")}function I(e){for(let t=1;t<=64;t++){let n=B(e,t);try{if(document.querySelectorAll(n).length===1&&document.querySelector(n)===e)return n}catch(o){}}return B(e,64)}var J=200,At=50,Nt=80,Mt=24,It=["h1,h2,h3,h4,h5,h6","img,video,svg,iframe",'[class*="card"],[class*="tile"],[class*="item"],[class*="feature"],[class*="tier"],[class*="step"],[class*="hero"],[class*="cta"]',"button","a","[data-nitpik]"];function Pt(e){return It.concat(e?[e]:[]).join(",")}function $(e){return(e.textContent||"").replace(/\s+/g," ").trim()}function Rt(e){let t=parseFloat(e.getAttribute("width"));return isNaN(t)?e.getBoundingClientRect().width:t}function _t(e){return $(e).length>At||e.getBoundingClientRect().height>Nt}function Lt(e,t){if(e.closest("[data-nitpik-ignore]"))return!0;if(t)try{if(e.closest(t))return!0}catch(n){}return!1}function zt(e,t){if(!t)return!1;try{return e.matches(t)}catch(n){return!1}}function jt(e,t){if(e.hasAttribute("data-nitpik")||zt(e,t))return!0;let n=e.tagName.toLowerCase();if(n==="svg")return Rt(e)>Mt;if(n==="a")return $(e).length>0;if(/^(h[1-6]|img|video|iframe|button)$/.test(n))return!0;let o=typeof e.className=="string"?e.className:"";return!/card|tile|feature|tier|step|hero|cta/.test(o)&&o.indexOf("item")!==-1?_t(e):!0}function q(e){return{element:e,path:M(e),selector:I(e),textPreview:S(e),tagName:e.tagName}}function G(e,t,n){let o=t.include,i=Pt(o),l=new Set,m=[],p=c=>{l.has(c)||(l.add(c),!Lt(c,t.exclude)&&jt(c,o)&&m.push(c))};e.forEach(c=>{c.nodeType===1&&(c.matches(i)&&p(c),c.querySelectorAll(i).forEach(p))}),e.length>1&&m.sort((c,h)=>c.compareDocumentPosition(h)&4?-1:1);let u=[];for(let c=0;c<m.length&&u.length<n;c++){let h=m[c+1];h&&m[c].contains(h)||u.push(m[c])}return u}function U(e,t){let n=t||{},o=n.maxElements===void 0?J:n.maxElements;return G([e],n,o).map(q)}function X(e,t,n){let o=n||{},i=o.maxElements===void 0?J:o.maxElements,l=0,m=new MutationObserver(p=>{let u=[];p.forEach(v=>v.addedNodes.forEach(k=>{k.nodeType===1&&k.isConnected&&u.push(k)}));let c=i-l;if(!u.length||c<=0)return;let h=G(u,o,c).map(q);h.length&&(l+=h.length,t(h))});return m.observe(e,{childList:!0,subtree:!0}),()=>m.disconnect()}function F(e,t){let n=new IntersectionObserver(o=>{o.forEach(i=>{i.isIntersecting?e(i.target):t(i.target)})});return{observe(o){n.observe(o)},disconnect(){n.disconnect()}}}var Dt="nitpik:";function W(e){try{let t=document.createElement("textarea");t.value=e,t.setAttribute("readonly",""),t.style.cssText="position:fixed;top:-9999px;left:-9999px;opacity:0",document.body.appendChild(t),t.select();let n=document.execCommand("copy");return document.body.removeChild(t),n}catch(t){return!1}}function Ht(e){let t=typeof navigator!="undefined"&&navigator.clipboard;if(t&&typeof t.writeText=="function"&&window.isSecureContext)try{t.writeText(e).catch(function(){W(e)});return}catch(n){}W(e)}function Kt(e){return e.map(function(t){return"### "+t.path+`
+(function(){
+  var text='<script src="https://cdn.jsdelivr.net/npm/nitpik"><\/script>';
+  var target=document.getElementById('tw-target');
+  var cursor=document.getElementById('tw-cursor');
+  var doneEl=document.getElementById('tw-done');
+  var box=document.getElementById('tw-box');
+  if(!target||!box)return;
+  var started=false,done=false,i=0;
+  var speed=35;
 
-`+t.comment+`
+  function type(){
+    if(i<text.length){
+      var ch=text[i];
+      if(ch==='<')target.textContent+=ch;
+      else if(ch==='>')target.textContent+=ch;
+      else target.textContent+=ch;
+      i++;
+      setTimeout(type,speed);
+    }else{
+      done=true;
+      cursor.style.display='none';
+      doneEl.classList.add('visible');
+    }
+  }
 
-\u2014 `+t.reviewer+", "+t.timestamp+`
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting&&!started){
+        started=true;
+        setTimeout(type,400);
+        observer.disconnect();
+      }
+    });
+  },{threshold:0.5});
+  observer.observe(box);
+})();
+</script>
 
----`}).join(`
-
-`)}function Vt(e){let t=0;return{submit(n){Ht("["+n.path+"]: "+n.comment),t++,e.emit("comment",n)},get count(){return t}}}function Bt(e){try{let t=JSON.parse(localStorage.getItem(e));return t&&Array.isArray(t.comments)?t.comments:[]}catch(t){return[]}}function Jt(e,t){let n=Dt+(t.pageKey||"default"),o=Bt(n);function i(){try{localStorage.setItem(n,l())}catch(p){}}function l(){return JSON.stringify({version:"1",comments:o},null,2)}function m(){return Kt(o)}return{submit(p){o.push(p),i(),e.emit("comment",p)},getComments(){return o.slice()},exportMarkdown:m,exportJSON:l,download(p){let u=p==="markdown"||p==="md",c=new Blob([u?m():l()],{type:u?"text/markdown":"application/json"}),h=URL.createObjectURL(c),v=document.createElement("a");v.href=h,v.download="nitpik-comments."+(u?"md":"json"),document.body.appendChild(v),v.click(),document.body.removeChild(v),setTimeout(function(){URL.revokeObjectURL(h)},0)},clear(){o=[];try{localStorage.removeItem(n)}catch(p){}},get count(){return o.length}}}function $t(e){let t=0;return{submit(n){typeof window.nitpikOnComment=="function"?window.nitpikOnComment(n):console.warn("NitPik: window.nitpikOnComment is not defined"),t++,e.emit("comment",n)},get count(){return t}}}function qt(e,t){let n=0;return{submit(o){if(!t.endpoint)console.warn("NitPik: api mode requires an endpoint option");else{let i={"Content-Type":"application/json"};t.apiKey&&(i["X-API-Key"]=t.apiKey),fetch(t.endpoint,{method:"POST",headers:i,body:JSON.stringify(o)}).catch(function(l){console.warn("NitPik: failed to POST comment",l)})}n++,e.emit("comment",o)},get count(){return n}}}function Y(e,t,n){let o=n||{};switch(e){case"clipboard":return Vt(t);case"collect":return Jt(t,o);case"callback":return $t(t);case"api":return qt(t,o);default:throw new Error('NitPik: unknown storage mode "'+e+'"')}}var Z=`
-:host { all: initial; --nitpik-color: #F59E0B; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 14px; color: #1f2937; }
-*, *::before, *::after { box-sizing: border-box; }
-button { font: inherit; cursor: pointer; }
-
-[data-nitpik-trigger] {
-  position: absolute; width: 24px; height: 24px; padding: 0; margin: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--nitpik-color); color: #fff; border: 0; border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.25); opacity: 0; transition: opacity .15s ease;
-  z-index: 2147483000;
-}
-[data-nitpik-trigger].visible, [data-nitpik-trigger]:focus-visible, [data-nitpik-trigger]:hover { opacity: 1; }
-[data-nitpik-trigger] svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-:focus-visible { outline: 2px solid #1f2937; outline-offset: 2px; }
-
-[data-nitpik-popover] {
-  position: fixed; width: 360px; max-width: 360px; background: #fff; border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.22); padding: 12px; z-index: 2147483600;
-  border-top: 3px solid var(--nitpik-color);
-}
-[data-nitpik-popover] form { display: flex; flex-direction: column; gap: 8px; margin: 0; }
-[data-nitpik-path] { font-size: 12px; color: #6b7280; word-break: break-word; }
-[data-nitpik-popover] textarea {
-  width: 100%; min-height: 80px; resize: vertical; font: inherit; padding: 8px;
-  border: 1px solid #d1d5db; border-radius: 6px; color: inherit; background: #fff;
-}
-.nitpik-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.nitpik-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1f2937; }
-.nitpik-btn.primary { background: var(--nitpik-color); border-color: var(--nitpik-color); color: #1f2937; font-weight: 600; }
-
-[data-nitpik-counter] {
-  position: fixed; bottom: 16px; right: 16px; padding: 8px 14px; border: 0; border-radius: 999px;
-  background: var(--nitpik-color); color: #1f2937; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,.25);
-  z-index: 2147483500;
-}
-[data-nitpik-panel] {
-  position: fixed; bottom: 60px; right: 16px; width: 320px; max-width: calc(100vw - 32px); max-height: 60vh;
-  display: flex; flex-direction: column; background: #fff; border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.22); z-index: 2147483500; overflow: hidden;
-}
-[data-nitpik-panel] ul { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
-[data-nitpik-panel] li { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
-[data-nitpik-panel] li b { display: block; font-size: 12px; color: #6b7280; font-weight: 500; }
-.nitpik-panel-actions { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid #e5e7eb; }
-
-[data-nitpik-toast] {
-  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); padding: 8px 16px;
-  background: #1f2937; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3);
-  animation: nitpik-slide .25s ease-out; z-index: 2147483647;
-}
-@keyframes nitpik-slide { from { transform: translate(-50%, -150%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-
-@media (max-width: 480px) {
-  [data-nitpik-popover] { width: 100%; max-width: 100%; left: 0 !important; border-radius: 10px 10px 0 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-nitpik-toast] { animation: none; }
-  [data-nitpik-trigger] { transition: none; }
-}
-`;var Q=80,Gt=80,Ut=2e3,Xt="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.7.7 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",tt="http://www.w3.org/2000/svg",O=8,et=200;function z(e,t){return e.length>t?e.slice(0,t)+"...":e}function x(e,t={},n){let o=document.createElement(e);for(let i in t)o.setAttribute(i,t[i]);return n!=null&&(o.textContent=n),o}function Ft(){let e=document.createElementNS(tt,"svg");e.setAttribute("viewBox","0 0 24 24"),e.setAttribute("aria-hidden","true");let t=document.createElementNS(tt,"path");return t.setAttribute("d",Xt),e.appendChild(t),e}function nt(e={}){let{color:t="#F59E0B",onSubmit:n=()=>{},reviewer:o=""}=e,i=null,l=null,m=[],p=null,u=null,c=null,h=null,v=[],k=!1,f=null,b=[],E=new Set,y={};function R(s,r,a,g){s.addEventListener(r,a,g),b.push(()=>s.removeEventListener(r,a,g))}function D({info:s,button:r}){let a=s.element.getBoundingClientRect();r.style.top=`${a.top+window.scrollY+4}px`,r.style.left=`${a.right+window.scrollX-28}px`}function H(){m.forEach(D)}function dt(s){let r=s.target;for(let a of m){let g=a.info.element===r||a.info.element.contains(r);a.button.classList.toggle("hovered",g),a.button.style.opacity=g?"1":""}}function C(){var s,r;p&&p.remove(),p=null,u&&((r=(s=u.button).focus)==null||r.call(s)),u=null}function lt(s,r){let a=r.getBoundingClientRect(),g=window.innerHeight||768,w=window.innerWidth||1024,T=a.bottom+O,A=T+et>g?Math.max(O,a.top-et-O):T,_=Math.max(O,Math.min(a.left,w-360-O));s.style.top=`${A}px`,s.style.left=`${_}px`}function pt(s){C(),u=s;let{info:r}=s;p=x("div",{"data-nitpik-popover":"",role:"dialog","aria-label":"Add comment"});let a=x("form"),g=x("div",{"data-nitpik-path":""},z(r.path,Q)),w=x("textarea",{"aria-label":"Comment",placeholder:"Your feedback..."}),T=x("div",{class:"nitpik-actions"}),A=x("button",{type:"button",class:"nitpik-btn","data-nitpik-cancel":""},"Cancel"),_=x("button",{type:"submit",class:"nitpik-btn primary"},"Submit");T.append(A,_),a.append(g,w,T),p.appendChild(a),l.appendChild(p),lt(p,r.element),A.addEventListener("click",C),a.addEventListener("submit",ft=>{ft.preventDefault();let V=w.value.trim();if(!V){w.focus();return}let{path:mt,selector:ht,tagName:gt,textPreview:xt}=r;r.element.setAttribute("data-nitpik-commented",""),r.element.style.outline=`2px dashed ${t}`,E.add(r.element),C(),n({selector:ht,path:mt,tagName:gt,textPreview:xt,comment:V,reviewer:o,timestamp:new Date().toISOString()})}),w.focus()}function ut(s){if(!p)return;if(s.key==="Escape"){C();return}if(s.key!=="Tab")return;let r=[...p.querySelectorAll("textarea, button")],a=r[0],g=r[r.length-1],w=l.activeElement;s.shiftKey&&w===a?(s.preventDefault(),g.focus()):!s.shiftKey&&w===g&&(s.preventDefault(),a.focus())}function K(){h&&h.remove(),h=x("div",{"data-nitpik-panel":""});let s=x("ul");v.forEach(a=>{let g=x("li");g.append(x("b",{},z(a.path||"",Q)),x("span",{},z(a.comment||"",Gt))),s.appendChild(g)});let r=x("div",{class:"nitpik-panel-actions"});[["Export MD","md"],["Export JSON","json"],["Clear","clear"]].forEach(([a,g])=>{let w=x("button",{type:"button",class:"nitpik-btn"},a);w.addEventListener("click",()=>y.onExport&&y.onExport(g)),r.appendChild(w)}),h.append(s,r),l.appendChild(h)}return y.mount=function(){i||(i=x("div",{"data-nitpik-host":""}),l=i.attachShadow({mode:"open"}),i.style.setProperty("--nitpik-color",t),l.appendChild(x("style",{},Z)),document.body.appendChild(i),R(document,"mouseover",dt),R(document,"keydown",ut),R(window,"resize",H),typeof ResizeObserver!="undefined"&&(f=new ResizeObserver(H),f.observe(document.body)))},y.addTriggers=function(r){if(l)for(let a of r){let g=x("button",{type:"button",tabindex:"0","data-nitpik-trigger":"","aria-label":`Comment on ${a.path}`});g.appendChild(Ft()),k&&g.classList.add("visible");let w={info:a,button:g};g.addEventListener("click",()=>pt(w)),l.appendChild(g),D(w),m.push(w)}},y.removeTriggers=function(){C(),m.forEach(r=>r.button.remove()),m=[]},y.showToast=function(r){if(!l)return;let a=x("div",{"data-nitpik-toast":"",role:"status"},r);l.appendChild(a);let g=setTimeout(()=>a.remove(),Ut);b.push(()=>clearTimeout(g))},y.showCounter=function(r,a=[]){l&&(v=a,c||(c=x("button",{type:"button","data-nitpik-counter":"","aria-label":"Show comments"}),c.addEventListener("click",()=>{h?(h.remove(),h=null):K()}),l.appendChild(c)),c.textContent=`${r} comment${r===1?"":"s"}`,h&&K())},y.setReviewMode=function(r){k=!!r,m.forEach(a=>a.button.classList.toggle("visible",k))},y.destroy=function(){b.splice(0).forEach(r=>r()),f&&f.disconnect(),f=null,E.forEach(r=>{r.removeAttribute("data-nitpik-commented"),r.style.outline=""}),E.clear(),i&&i.remove(),i=l=p=c=h=u=null,m=[]},y}var it="nitpik:reviewer",Wt={clipboard:"Copied!",collect:"Comment saved",callback:"Comment sent",api:"Comment sent"},ot={mode:"data-mode",color:"data-color",position:"data-position",exclude:"data-exclude",include:"data-include",reviewer:"data-reviewer",endpoint:"data-endpoint",apiKey:"data-api-key"};function rt(e){let t={};if(!e)return t;Object.keys(ot).forEach(o=>{let i=e.getAttribute(ot[o]);i!==null&&i!==""&&(t[o]=i)});let n=parseInt(e.getAttribute("data-max-elements"),10);return isNaN(n)||(t.maxElements=n),t}function Yt(){return document.currentScript||document.querySelector('script[src*="nitpik"]')}function Zt(){try{return localStorage.getItem(it)||""}catch(e){return""}}function Qt(e){try{localStorage.setItem(it,e)}catch(t){}}var at=typeof document!="undefined"?document.currentScript:null,te=rt(at||(typeof document!="undefined"?document.querySelector('script[src*="nitpik"]'):null)),d=null,P=[];function j(e){if(d){console.warn("NitPik: already initialized");return}let t=Object.assign({mode:"clipboard"},te,e||{}),n=N();P.forEach(f=>n.on(f.event,f.fn));let o=Y(t.mode,n,{endpoint:t.endpoint,apiKey:t.apiKey,pageKey:t.pageKey||(typeof location!="undefined"?location.pathname:void 0)}),i=t.reviewer||Zt();function l(f,b){o.submit(f),f&&f.reviewer&&Qt(f.reviewer),u.showToast(Wt[t.mode]||"Comment saved"),u.showCounter(o.count,o.getComments?o.getComments():[]),b&&b.setAttribute("data-nitpik-commented","")}let m=new Map,p=new Set,u=nt({color:t.color,position:t.position,reviewer:i,onSubmit:f=>{let b=Array.from(m.values()).find(E=>E.selector===f.selector&&E.path===f.path);l(f,b&&b.element)}});u.onExport=f=>{if(f==="clear"){o.clear&&o.clear(),u.showCounter(o.count,o.getComments?o.getComments():[]);return}o.download&&o.download(f)},u.mount();let c=F(f=>{let b=m.get(f);b&&!p.has(f)&&(p.add(f),u.addTriggers([b]))},()=>{});function h(f){f.forEach(b=>{m.has(b.element)||(m.set(b.element,b),c.observe(b.element))})}let v={include:t.include,exclude:t.exclude,maxElements:t.maxElements};h(U(document.body,v));let k=X(document.body,h,v);d={emitter:n,storage:o,ui:u,visibility:c,stopDOM:k,handleSubmit:l,onExport:u.onExport}}function ct(){d&&(d.stopDOM(),d.visibility.disconnect(),d.ui.destroy(),d=null)}var st={init:j,destroy:ct,getComments(){return d&&d.storage.getComments?d.storage.getComments():[]},exportMarkdown(){return d&&d.storage.exportMarkdown?d.storage.exportMarkdown():""},exportJSON(){return d&&d.storage.exportJSON?d.storage.exportJSON():JSON.stringify({comments:[]})},download(e){d&&d.storage.download&&d.storage.download(e)},on(e,t){P.push({event:e,fn:t}),d&&d.emitter.on(e,t)},off(e,t){let n=P.findIndex(o=>o.event===e&&o.fn===t);n>=0&&P.splice(n,1),d&&d.emitter.off(e,t)},get count(){return d?d.storage.count:0}},ee={submit(e,t){d&&d.handleSubmit(e,t)},exportAction(e){return d?d.onExport(e):void 0}},ne=st;if(typeof window!="undefined"&&typeof document!="undefined"&&(window.NitPik=st,at||Yt())){let e=()=>j();document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):e()}return Et(oe);})();
+<!-- NitPik (tree-based, v2) inlined -->
+<script>
+var NitPik=(()=>{var G=Object.defineProperty;var Ct=Object.getOwnPropertyDescriptor;var At=Object.getOwnPropertyNames;var Tt=Object.prototype.hasOwnProperty;var Nt=(e,t)=>{for(var n in t)G(e,n,{get:t[n],enumerable:!0})},Ot=(e,t,n,o)=>{if(t&&typeof t=="object"||typeof t=="function")for(let a of At(t))!Tt.call(e,a)&&a!==n&&G(e,a,{get:()=>t[a],enumerable:!(o=Ct(t,a))||o.enumerable});return e};var It=e=>Ot(G({},"__esModule",{value:!0}),e);var ce={};Nt(ce,{__internals:()=>ae,createEmitter:()=>O,default:()=>se,destroy:()=>ut,generatePath:()=>I,generateSelector:()=>M,getTextPreview:()=>A,init:()=>U,parseScriptConfig:()=>lt});function O(){let e=new Map;return{on(t,n){e.has(t)||e.set(t,new Set),e.get(t).add(n)},off(t,n){let o=e.get(t);o&&o.delete(n)},emit(t,n){let o=e.get(t);o&&Array.from(o).forEach(function(a){a(n)})}}}var Mt=new Set(["SECTION","ARTICLE","ASIDE","NAV","HEADER","FOOTER","MAIN"]),Rt="h1,h2,h3,h4,h5,h6";function A(e,t){let n=t===void 0?40:t,o=(e.textContent||"").replace(/\s+/g," ").trim();return o?o.length>n?o.slice(0,n)+"...":o:""}function Pt(e){let t=e.element,n=t.tagName.toLowerCase();if(Mt.has(t.tagName)){let a=t.querySelector(Rt);if(a){let d=A(a);if(d)return"Section: "+d}}let o=A(t);return o?n+": "+o:n}function I(e){let t=[],n=e;for(;n;)t.unshift(Pt(n)),n=n.parent;return t.join(" > ")}function _t(e){let t=e.tagName.toLowerCase(),n=e.parentElement;if(!n)return t;let o=Array.prototype.indexOf.call(n.children,e)+1;return t+":nth-child("+o+")"}function J(e,t){let n=[],o=e;for(;o&&o.nodeType===1&&o!==document.documentElement&&n.length<t;){if(o.id&&/^[A-Za-z][\w-]*$/.test(o.id))return n.unshift("#"+o.id),n.join(" > ");n.unshift(_t(o)),o=o.parentElement}return n.join(" > ")}function M(e){for(let t=1;t<=64;t++){let n=J(e,t);try{if(document.querySelectorAll(n).length===1&&document.querySelector(n)===e)return n}catch(o){}}return J(e,64)}var q=200,W=50,Lt=24,Dt=new Set(["SECTION","ARTICLE","ASIDE","NAV","HEADER","FOOTER","MAIN"]),zt=/^H[1-6]$/,Ht=new Set(["IMG","VIDEO","IFRAME"]),jt=new Set(["SPAN","EM","STRONG","CODE","SMALL","SUB","SUP","MARK"]),Gt=/card|tile|feature|step|hero|cta/i;function K(e){return(e.textContent||"").replace(/\s+/g," ").trim()}function Kt(e){let t=parseFloat(e.getAttribute("width"));return isNaN(t)?e.getBoundingClientRect?e.getBoundingClientRect().width:0:t}function V(e,t){if(!t)return!1;try{return e.matches(t)}catch(n){return!1}}function Vt(e){if(e.tagName!=="DIV"||e.id||e.className)return!1;let t=e.attributes;for(let o=0;o<t.length;o++)if(t[o].name.startsWith("data-"))return!1;return e.children.length===1}function Y(e,t){if(!(e instanceof Element)||e.nodeType!==1||e.hasAttribute("data-nitpik-host"))return!1;if(e.hasAttribute("data-nitpik")||V(e,t&&t.include))return!0;let n=e.tagName;if(jt.has(n))return!1;if(Dt.has(n)||zt.test(n)||Ht.has(n))return!0;if(n==="SVG"||n==="svg")return Kt(e)>Lt;if(n==="BUTTON")return!0;if(n==="A")return K(e).length>0;let o=typeof e.className=="string"?e.className:"";return Gt.test(o)&&K(e).length>W||n==="LI"&&K(e).length>W?!0:(Vt(e),!1)}function Z(e){let t=e.element;return{element:t,path:I(e),selector:M(t),textPreview:A(t),tagName:t.tagName}}function Q(e,t){let n=t||{},o=n.maxElements===void 0?q:n.maxElements,a=[],d=new Map,f=[];function s(l){if(d.size>=o||l.hasAttribute&&l.hasAttribute("data-nitpik-ignore")||V(l,n.exclude))return;let r=Y(l,n),u=null;if(r){let g=f.length>0?f[f.length-1]:null,b={element:l,parent:g,children:[],depth:g?g.depth+1:0,info:null};g?g.children.push(b):a.push(b),d.set(l,b),f.push(b),u=b}let p=l.children;if(p)for(let g=0;g<p.length&&!(d.size>=o);g++)s(p[g]);u&&f.pop()}let m=e.children;for(let l=0;l<m.length;l++)s(m[l]);for(let l of d.values())l.info=Z(l);return{roots:a,nodeMap:d}}function tt(e,t,n,o){let a=o||{},d=a.maxElements===void 0?q:a.maxElements;function f(r){let u=t.get(r);if(u){if(t.delete(r),u.parent){let p=u.parent.children.indexOf(u);p>=0&&u.parent.children.splice(p,1)}u.children.slice().forEach(p=>f(p.element))}}let s=new MutationObserver(r=>{let u=!1;r.forEach(g=>g.removedNodes.forEach(b=>{b.nodeType===1&&(m(b),u=!0)}));let p=[];r.forEach(g=>g.addedNodes.forEach(b=>{b.nodeType!==1||!b.isConnected||l(b,p)})),p.length&&n(p)});function m(r){t.has(r)&&f(r);let u=r.children;if(u)for(let p=0;p<u.length;p++)m(u[p])}function l(r,u){if(t.size>=d||u.length+t.size>=d||!r.isConnected||r.hasAttribute&&r.hasAttribute("data-nitpik-ignore")||V(r,a.exclude))return;if(Y(r,a)&&!t.has(r)){let g=null,b=r.parentElement;for(;b&&b!==e;){if(t.has(b)){g=t.get(b);break}b=b.parentElement}let v={element:r,parent:g,children:[],depth:g?g.depth+1:0,info:null};g&&g.children.push(v),t.set(r,v),v.info=Z(v),u.push(v)}let p=r.children;if(p)for(let g=0;g<p.length;g++)l(p[g],u)}return s.observe(e,{childList:!0,subtree:!0}),()=>s.disconnect()}var $t="nitpik:";function et(e){try{let t=document.createElement("textarea");t.value=e,t.setAttribute("readonly",""),t.style.cssText="position:fixed;top:-9999px;left:-9999px;opacity:0",document.body.appendChild(t),t.select();let n=document.execCommand("copy");return document.body.removeChild(t),n}catch(t){return!1}}function Bt(e){let t=typeof navigator!="undefined"&&navigator.clipboard;if(t&&typeof t.writeText=="function"&&window.isSecureContext)try{t.writeText(e).catch(function(){et(e)});return}catch(n){}et(e)}function Ut(e){return e.map(function(t){return"### "+t.path+"\n\n"+t.comment+"\n\n— "+t.reviewer+", "+t.timestamp+"\n\n---"}).join("\n\n")}function Xt(e){let t=0;return{submit(n){Bt("["+n.path+"]: "+n.comment),t++,e.emit("comment",n)},get count(){return t}}}function Ft(e){try{let t=JSON.parse(localStorage.getItem(e));return t&&Array.isArray(t.comments)?t.comments:[]}catch(t){return[]}}function Jt(e,t){let n=$t+(t.pageKey||"default"),o=Ft(n);function a(){try{localStorage.setItem(n,d())}catch(s){}}function d(){return JSON.stringify({version:"1",comments:o},null,2)}function f(){return Ut(o)}return{submit(s){o.push(s),a(),e.emit("comment",s)},getComments(){return o.slice()},exportMarkdown:f,exportJSON:d,download(s){let m=s==="markdown"||s==="md",l=new Blob([m?f():d()],{type:m?"text/markdown":"application/json"}),r=URL.createObjectURL(l),u=document.createElement("a");u.href=r,u.download="nitpik-comments."+(m?"md":"json"),document.body.appendChild(u),u.click(),document.body.removeChild(u),setTimeout(function(){URL.revokeObjectURL(r)},0)},clear(){o=[];try{localStorage.removeItem(n)}catch(s){}},get count(){return o.length}}}function Wt(e){let t=0;return{submit(n){typeof window.nitpikOnComment=="function"?window.nitpikOnComment(n):console.warn("NitPik: window.nitpikOnComment is not defined"),t++,e.emit("comment",n)},get count(){return t}}}function qt(e,t){let n=0;return{submit(o){if(!t.endpoint)console.warn("NitPik: api mode requires an endpoint option");else{let a={"Content-Type":"application/json"};t.apiKey&&(a["X-API-Key"]=t.apiKey),fetch(t.endpoint,{method:"POST",headers:a,body:JSON.stringify(o)}).catch(function(d){console.warn("NitPik: failed to POST comment",d)})}n++,e.emit("comment",o)},get count(){return n}}}function nt(e,t,n){let o=n||{};switch(e){case"clipboard":return Xt(t);case"collect":return Jt(t,o);case"callback":return Wt(t);case"api":return qt(t,o);default:throw new Error('NitPik: unknown storage mode "'+e+'"')}}var ot=":host { all: initial; --nitpik-color: #F59E0B; font-family: system-ui, -apple-system, \"Segoe UI\", sans-serif; font-size: 14px; color: #1f2937; }\n*, *::before, *::after { box-sizing: border-box; }\nbutton { font: inherit; cursor: pointer; }\n\n[data-nitpik-trigger] {\n  position: absolute; width: 24px; height: 24px; padding: 0; margin: 0;\n  display: flex; align-items: center; justify-content: center;\n  background: var(--nitpik-color); color: #fff; border: 0; border-radius: 6px;\n  box-shadow: 0 1px 4px rgba(0,0,0,.25); opacity: 0; transition: opacity .15s ease;\n  z-index: 2147483000;\n}\n[data-nitpik-trigger].visible, [data-nitpik-trigger]:focus-visible, [data-nitpik-trigger]:hover { opacity: 1; }\n[data-nitpik-trigger] svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }\n:focus-visible { outline: 2px solid #1f2937; outline-offset: 2px; }\n\n[data-nitpik-popover] {\n  position: fixed; width: 360px; max-width: 360px; background: #fff; border-radius: 10px;\n  box-shadow: 0 8px 30px rgba(0,0,0,.22); padding: 12px; z-index: 2147483600;\n  border-top: 3px solid var(--nitpik-color);\n}\n[data-nitpik-popover] form { display: flex; flex-direction: column; gap: 8px; margin: 0; }\n[data-nitpik-path] { font-size: 12px; color: #6b7280; word-break: break-word; }\n[data-nitpik-popover] textarea {\n  width: 100%; min-height: 80px; resize: vertical; font: inherit; padding: 8px;\n  border: 1px solid #d1d5db; border-radius: 6px; color: inherit; background: #fff;\n}\n.nitpik-actions { display: flex; justify-content: flex-end; gap: 8px; }\n.nitpik-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1f2937; }\n.nitpik-btn.primary { background: var(--nitpik-color); border-color: var(--nitpik-color); color: #1f2937; font-weight: 600; }\n\n[data-nitpik-counter] {\n  position: fixed; bottom: 16px; right: 16px; padding: 8px 14px; border: 0; border-radius: 999px;\n  background: var(--nitpik-color); color: #1f2937; font-weight: 600; box-shadow: 0 2px 10px rgba(0,0,0,.25);\n  z-index: 2147483500;\n}\n[data-nitpik-panel] {\n  position: fixed; bottom: 60px; right: 16px; width: 320px; max-width: calc(100vw - 32px); max-height: 60vh;\n  display: flex; flex-direction: column; background: #fff; border-radius: 10px;\n  box-shadow: 0 8px 30px rgba(0,0,0,.22); z-index: 2147483500; overflow: hidden;\n}\n[data-nitpik-panel] ul { list-style: none; margin: 0; padding: 0; overflow-y: auto; }\n[data-nitpik-panel] li { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }\n[data-nitpik-panel] li b { display: block; font-size: 12px; color: #6b7280; font-weight: 500; }\n.nitpik-panel-actions { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid #e5e7eb; }\n\n[data-nitpik-toast] {\n  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); padding: 8px 16px;\n  background: #1f2937; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.3);\n  animation: nitpik-slide .25s ease-out; z-index: 2147483647;\n}\n@keyframes nitpik-slide { from { transform: translate(-50%, -150%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }\n\n@media (max-width: 480px) {\n  [data-nitpik-popover] { width: 100%; max-width: 100%; left: 0 !important; border-radius: 10px 10px 0 0; }\n}\n[data-nitpik-highlight] {\n  position: absolute; pointer-events: none;\n  outline: 2px dashed var(--nitpik-color);\n  outline-offset: 2px; border-radius: 4px;\n  transition: top .1s ease-out, left .1s ease-out, width .1s ease-out, height .1s ease-out;\n  z-index: 2147482999; display: none;\n}\n\n@media (prefers-reduced-motion: reduce) {\n  [data-nitpik-toast] { animation: none; }\n  [data-nitpik-trigger] { transition: none; }\n  [data-nitpik-highlight] { transition: none; }\n}";var $=80,Yt=80,Zt=2e3,Qt="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.7.7 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",it="http://www.w3.org/2000/svg",T=8,rt=200,B=24;function R(e,t){return e.length>t?e.slice(0,t)+"...":e}function y(e,t={},n){let o=document.createElement(e);for(let a in t)o.setAttribute(a,t[a]);return n!=null&&(o.textContent=n),o}function te(){let e=document.createElementNS(it,"svg");e.setAttribute("viewBox","0 0 24 24"),e.setAttribute("aria-hidden","true");let t=document.createElementNS(it,"path");return t.setAttribute("d",Qt),e.appendChild(t),e}function at(e={}){let{color:t="#F59E0B",onSubmit:n=()=>{},reviewer:o=""}=e,a=null,d=null,f=null,s=null,m=null,l=null,r=null,u=null,p=null,g=[],b=!1,v=null,_=[],L=new Set,E={};function D(c,i,x,w){c.addEventListener(i,x,w),_.push(()=>c.removeEventListener(i,x,w))}function ft(c){if(!f)return null;let i=c;for(;i&&i!==document.body&&i!==document.documentElement;){if(f.has(i))return f.get(i);i=i.parentElement}return null}function z(c){if(!s||!c)return;let i=c.element.getBoundingClientRect(),x=B/2,w=i.top+window.scrollY-x,k=i.right+window.scrollX-x;w<0&&(w=0),k<0&&(k=0);let S=document.documentElement.clientWidth||window.innerWidth||1024;k+B>S+window.scrollX&&(k=S+window.scrollX-B),s.style.top=w+"px",s.style.left=k+"px",s.style.opacity="1",s.setAttribute("aria-label","Comment on "+R(c.info.path,$))}function H(c){if(!m||!c)return;let i=c.element.getBoundingClientRect();m.style.top=i.top+window.scrollY+"px",m.style.left=i.left+window.scrollX+"px",m.style.width=i.width+"px",m.style.height=i.height+"px",m.style.display="block"}function mt(){s&&(s.style.opacity="0"),m&&(m.style.display="none"),l=null}function ht(c){if(r)return;let i=c.target;a&&(i===a||a.contains(i))||gt(i)}function gt(c){let i=ft(c);if(i!==l){if(!i){mt();return}l=i,z(i),H(i)}}function C(){r&&r.remove(),r=null}function xt(c,i){let x=i.getBoundingClientRect(),w=window.innerHeight||768,k=window.innerWidth||1024,S=x.bottom+T,N=S+rt>w?Math.max(T,x.top-rt-T):S,j=Math.max(T,Math.min(x.left,k-360-T));c.style.top=N+"px",c.style.left=j+"px"}function bt(){if(!l)return;C();let c=l,{info:i}=c;r=y("div",{"data-nitpik-popover":"",role:"dialog","aria-label":"Add comment"});let x=y("form"),w=y("div",{"data-nitpik-path":""},R(i.path,$)),k=y("textarea",{"aria-label":"Comment",placeholder:"Your feedback..."}),S=y("div",{class:"nitpik-actions"}),N=y("button",{type:"button",class:"nitpik-btn","data-nitpik-cancel":""},"Cancel"),j=y("button",{type:"submit",class:"nitpik-btn primary"},"Submit");S.append(N,j),x.append(w,k,S),r.appendChild(x),d.appendChild(r),xt(r,i.element),N.addEventListener("click",C),x.addEventListener("submit",yt=>{yt.preventDefault();let F=k.value.trim();if(!F){k.focus();return}let{path:kt,selector:vt,tagName:Et,textPreview:St}=i;i.element.setAttribute("data-nitpik-commented",""),i.element.style.outline="2px dashed "+t,L.add(i.element),C(),n({selector:vt,path:kt,tagName:Et,textPreview:St,comment:F,reviewer:o,timestamp:new Date().toISOString()})}),k.focus()}function wt(c){if(!r)return;if(c.key==="Escape"){C();return}if(c.key!=="Tab")return;let i=[...r.querySelectorAll("textarea, button")],x=i[0],w=i[i.length-1],k=d.activeElement;c.shiftKey&&k===x?(c.preventDefault(),w.focus()):!c.shiftKey&&k===w&&(c.preventDefault(),x.focus())}function X(){p&&p.remove(),p=y("div",{"data-nitpik-panel":""});let c=y("ul");g.forEach(x=>{let w=y("li");w.append(y("b",{},R(x.path||"",$)),y("span",{},R(x.comment||"",Yt))),c.appendChild(w)});let i=y("div",{class:"nitpik-panel-actions"});[["Export MD","md"],["Export JSON","json"],["Clear","clear"]].forEach(([x,w])=>{let k=y("button",{type:"button",class:"nitpik-btn"},x);k.addEventListener("click",()=>E.onExport&&E.onExport(w)),i.appendChild(k)}),p.append(c,i),d.appendChild(p)}return E.mount=function(){a||(a=y("div",{"data-nitpik-host":""}),d=a.attachShadow({mode:"open"}),a.style.setProperty("--nitpik-color",t),d.appendChild(y("style",{},ot)),document.body.appendChild(a),D(document,"mousemove",ht),D(document,"keydown",wt),D(window,"scroll",()=>{l&&(z(l),H(l))}),typeof ResizeObserver!="undefined"&&(v=new ResizeObserver(()=>{l&&(z(l),H(l))}),v.observe(document.body)))},E.setTree=function(i){f=i,d&&(s||(s=y("button",{type:"button",tabindex:"0","data-nitpik-trigger":"","aria-label":"Comment"}),s.appendChild(te()),s.style.opacity="0",s.addEventListener("click",bt),d.appendChild(s)),m||(m=y("div",{"data-nitpik-highlight":""}),d.appendChild(m)),b&&s&&s.classList.add("visible"))},E.clearTree=function(){f=null,l=null,s&&(s.style.opacity="0"),m&&(m.style.display="none"),C()},E.showToast=function(i){if(!d)return;let x=y("div",{"data-nitpik-toast":"",role:"status"},i);d.appendChild(x);let w=setTimeout(()=>x.remove(),Zt);_.push(()=>clearTimeout(w))},E.showCounter=function(i,x=[]){d&&(g=x,u||(u=y("button",{type:"button","data-nitpik-counter":"","aria-label":"Show comments"}),u.addEventListener("click",()=>{p?(p.remove(),p=null):X()}),d.appendChild(u)),u.textContent=i+" comment"+(i===1?"":"s"),p&&X())},E.setReviewMode=function(i){b=!!i,s&&s.classList.toggle("visible",b)},E.destroy=function(){_.splice(0).forEach(i=>i()),v&&v.disconnect(),v=null,L.forEach(i=>{i.removeAttribute("data-nitpik-commented"),i.style.outline=""}),L.clear(),C(),a&&a.remove(),a=d=r=u=p=s=m=l=null,f=null},E}var ct="nitpik:reviewer",ee={clipboard:"Copied!",collect:"Comment saved",callback:"Comment sent",api:"Comment sent"},st={mode:"data-mode",color:"data-color",position:"data-position",exclude:"data-exclude",include:"data-include",reviewer:"data-reviewer",endpoint:"data-endpoint",apiKey:"data-api-key"};function lt(e){let t={};if(!e)return t;Object.keys(st).forEach(o=>{let a=e.getAttribute(st[o]);a!==null&&a!==""&&(t[o]=a)});let n=parseInt(e.getAttribute("data-max-elements"),10);return isNaN(n)||(t.maxElements=n),t}function ne(){return document.currentScript||document.querySelector('script[src*="nitpik"]')}function oe(){try{return localStorage.getItem(ct)||""}catch(e){return""}}function ie(e){try{localStorage.setItem(ct,e)}catch(t){}}var dt=typeof document!="undefined"?document.currentScript:null,re=lt(dt||(typeof document!="undefined"?document.querySelector('script[src*="nitpik"]'):null)),h=null,P=[];function U(e){if(h){console.warn("NitPik: already initialized");return}let t=Object.assign({mode:"clipboard"},re,e||{}),n=O();P.forEach(r=>n.on(r.event,r.fn));let o=nt(t.mode,n,{endpoint:t.endpoint,apiKey:t.apiKey,pageKey:t.pageKey||(typeof location!="undefined"?location.pathname:void 0)}),a=t.reviewer||oe();function d(r){o.submit(r),r&&r.reviewer&&ie(r.reviewer),f.showToast(ee[t.mode]||"Comment saved"),f.showCounter(o.count,o.getComments?o.getComments():[])}let f=at({color:t.color,reviewer:a,onSubmit:r=>{d(r)}});f.onExport=r=>{if(r==="clear"){o.clear&&o.clear(),f.showCounter(o.count,o.getComments?o.getComments():[]);return}o.download&&o.download(r)},f.mount();let s={include:t.include,exclude:t.exclude,maxElements:t.maxElements},{nodeMap:m}=Q(document.body,s);f.setTree(m);let l=tt(document.body,m,()=>{f.setTree(m)},s);h={emitter:n,storage:o,ui:f,stopDOM:l,handleSubmit:d,onExport:f.onExport}}function ut(){h&&(h.stopDOM(),h.ui.destroy(),h=null)}var pt={init:U,destroy:ut,getComments(){return h&&h.storage.getComments?h.storage.getComments():[]},exportMarkdown(){return h&&h.storage.exportMarkdown?h.storage.exportMarkdown():""},exportJSON(){return h&&h.storage.exportJSON?h.storage.exportJSON():JSON.stringify({comments:[]})},download(e){h&&h.storage.download&&h.storage.download(e)},on(e,t){P.push({event:e,fn:t}),h&&h.emitter.on(e,t)},off(e,t){let n=P.findIndex(o=>o.event===e&&o.fn===t);n>=0&&P.splice(n,1),h&&h.emitter.off(e,t)},get count(){return h?h.storage.count:0}},ae={submit(e){h&&h.handleSubmit(e)},exportAction(e){return h?h.onExport(e):void 0}},se=pt;if(typeof window!="undefined"&&typeof document!="undefined"&&(window.NitPik=pt,dt||ne())){let e=()=>U();document.readyState==="loading"?document.addEventListener("DOMContentLoaded",e):e()}return It(ce)})();
 NitPik = NitPik.default;
-
 </script>
 </body>
 </html>
