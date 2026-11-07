@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NitPik basic example</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 880px; margin: 0 auto; padding: 32px 24px; color: #1f2937; background: #fff; line-height: 1.55; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+  .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 16px; }
+  img { max-width: 100%; height: auto; display: block; border-radius: 8px; }
+</style>
+</head>
+<body>
+  <h1>NitPik example page</h1>
+  <p>Clipboard mode (default): each submitted comment is copied to your clipboard.</p>
+  <h2>Why review in place</h2>
+  <p>Hover any heading, image or card to reveal a comment trigger, then leave feedback tied to that exact element.</p>
+  <img alt="Placeholder banner" width="800" height="200" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='200'%3E%3Crect width='800' height='200' fill='%23e5e7eb'/%3E%3C/svg%3E">
+  <h2>Highlights</h2>
+  <div class="card-grid">
+    <div class="card"><h3>Fast</h3><p>Zero dependencies and a single script tag.</p></div>
+    <div class="card"><h3>Precise</h3><p>Every comment carries a stable element path.</p></div>
+    <div class="card"><h3>Portable</h3><p>Copy to clipboard, export Markdown or JSON.</p></div>
+  </div>
+  <script src="../dist/nitpik.js"></script>
+</body>
+</html>

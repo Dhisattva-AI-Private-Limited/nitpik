@@ -4,18 +4,22 @@
   "description": "Zero-dependency JS library that turns any HTML page into a reviewable document with per-element commenting",
   "main": "dist/nitpik.js",
   "module": "src/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "node esbuild.config.js",
     "build:min": "node esbuild.config.js --min-only",
     "dev": "node esbuild.config.js --watch",
     "test": "vitest run",
-    "test:e2e": "echo \"e2e tests not yet configured\""
+    "test:e2e": "playwright test"
   },
   "license": "UNLICENSED",
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "esbuild": "^0.25.0",
     "happy-dom": "^17.0.0",
+    "serve": "^14.2.7",
     "vitest": "^3.0.0"
   }
 }
