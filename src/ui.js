@@ -99,7 +99,9 @@ export function createUI(options = {}) {
 
   function onMouseMove(e) {
     if (popover) return
-    processHover(e.target)
+    const target = e.target
+    if (host && (target === host || host.contains(target))) return
+    processHover(target)
   }
 
   function processHover(target) {

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// Playwright CSS locators pierce open shadow roots, so these reach the NitPik UI directly.
 const trigger = (page) => page.locator('[data-nitpik-trigger]')
+const highlight = (page) => page.locator('[data-nitpik-highlight]')
 
 async function openPopoverOn(page, selector) {
   await page.locator(selector).first().hover()
@@ -25,10 +25,11 @@ test.describe('NitPik e2e', () => {
     expect(hasShadow).toBe(true)
   })
 
-  test('trigger appears on hover', async ({ page }) => {
+  test('trigger and highlight appear on hover', async ({ page }) => {
     await page.goto('/examples/basic.html')
     await page.locator('h1').hover()
     await expect(trigger(page).first()).toBeVisible()
+    await expect(highlight(page).first()).toBeVisible()
   })
 
   test('clicking trigger opens popover', async ({ page }) => {
@@ -61,7 +62,7 @@ test.describe('NitPik e2e', () => {
     await expect(page.locator('[data-nitpik-popover]')).toHaveCount(0)
   })
 
-  test('destroy removes all UI traces', async ({ page }) => {
+  test('destroy removes all UI traces including highlight', async ({ page }) => {
     await page.goto('/examples/basic.html')
     await comment(page, 'h1', 'Soon gone')
     await page.evaluate(() => window.NitPik.destroy())
@@ -72,10 +73,21 @@ test.describe('NitPik e2e', () => {
     expect(outline).toBe('')
   })
 
+  test('hover different elements moves trigger', async ({ page }) => {
+    await page.goto('/examples/basic.html')
+    await page.locator('h1').hover()
+    await expect(trigger(page).first()).toBeVisible()
+    const pos1 = await trigger(page).first().boundingBox()
+    await page.locator('h2').first().hover()
+    await expect(trigger(page).first()).toBeVisible()
+    const pos2 = await trigger(page).first().boundingBox()
+    expect(pos1.y).not.toBe(pos2.y)
+  })
+
   test('collect mode: comments accumulate and export works', async ({ page }) => {
     await page.goto('/examples/collect.html')
     await comment(page, 'h1', 'First note')
-    await comment(page, 'h2 >> nth=0', 'Second note')
+    await comment(page, 'h2', 'Second note')
     await expect(page.locator('[data-nitpik-counter]')).toContainText('2 comments')
 
     const md = await page.evaluate(() => window.NitPik.exportMarkdown())

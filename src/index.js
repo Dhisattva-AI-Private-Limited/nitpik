@@ -1,10 +1,10 @@
 import { createEmitter } from './events.js'
-import { discoverElements, observeDOM, createVisibilityObserver } from './discovery.js'
+import { buildTree, observeDOM } from './discovery.js'
 import { createStorage } from './storage.js'
 import { createUI } from './ui.js'
 
 export { createEmitter } from './events.js'
-export { generatePath, generateSelector, getTextPreview } from './path.js'
+export { generateTreePath as generatePath, generateSelector, getTextPreview } from './path.js'
 
 const REVIEWER_KEY = 'nitpik:reviewer'
 const TOASTS = { clipboard: 'Copied!', collect: 'Comment saved', callback: 'Comment sent', api: 'Comment sent' }
@@ -36,12 +36,11 @@ function saveReviewer(name) {
   try { localStorage.setItem(REVIEWER_KEY, name) } catch (e) { /* unavailable */ }
 }
 
-// Script config is captured at load time (currentScript is null afterwards).
 const scriptEl = typeof document !== 'undefined' ? document.currentScript : null
 const scriptConfig = parseScriptConfig(scriptEl || (typeof document !== 'undefined' ? document.querySelector('script[src*="nitpik"]') : null))
 
 let state = null
-const listeners = [] // { event, fn } registered before init or kept across
+const listeners = []
 
 function init(options) {
   if (state) { console.warn('NitPik: already initialized'); return }
@@ -53,22 +52,16 @@ function init(options) {
   })
   const reviewer = opts.reviewer || readStoredReviewer()
 
-  function handleSubmit(data, element) {
+  function handleSubmit(data) {
     storage.submit(data)
     if (data && data.reviewer) saveReviewer(data.reviewer)
     ui.showToast(TOASTS[opts.mode] || 'Comment saved')
     ui.showCounter(storage.count, storage.getComments ? storage.getComments() : [])
-    if (element) element.setAttribute('data-nitpik-commented', '')
   }
 
-  const infoByEl = new Map()
-  const attached = new Set()
   const ui = createUI({
-    color: opts.color, position: opts.position, reviewer,
-    onSubmit: (data) => {
-      const info = Array.from(infoByEl.values()).find((i) => i.selector === data.selector && i.path === data.path)
-      handleSubmit(data, info && info.element)
-    },
+    color: opts.color, reviewer,
+    onSubmit: (data) => { handleSubmit(data) },
   })
   ui.onExport = (format) => {
     if (format === 'clear') {
@@ -76,38 +69,25 @@ function init(options) {
       ui.showCounter(storage.count, storage.getComments ? storage.getComments() : [])
       return undefined
     }
-    // 'md' / 'json' export buttons trigger a file download of the same content
-    // as exportMarkdown() / exportJSON().
     if (storage.download) storage.download(format)
     return undefined
   }
   ui.mount()
 
-  const visibility = createVisibilityObserver(
-    (el) => {
-      const info = infoByEl.get(el)
-      if (info && !attached.has(el)) { attached.add(el); ui.addTriggers([info]) }
-    },
-    () => {}
-  )
-  function track(infos) {
-    infos.forEach((info) => {
-      if (infoByEl.has(info.element)) return
-      infoByEl.set(info.element, info)
-      visibility.observe(info.element)
-    })
-  }
   const discoveryOpts = { include: opts.include, exclude: opts.exclude, maxElements: opts.maxElements }
-  track(discoverElements(document.body, discoveryOpts))
-  const stopDOM = observeDOM(document.body, track, discoveryOpts)
+  const { nodeMap } = buildTree(document.body, discoveryOpts)
+  ui.setTree(nodeMap)
 
-  state = { emitter, storage, ui, visibility, stopDOM, handleSubmit, onExport: ui.onExport }
+  const stopDOM = observeDOM(document.body, nodeMap, () => {
+    ui.setTree(nodeMap)
+  }, discoveryOpts)
+
+  state = { emitter, storage, ui, stopDOM, handleSubmit, onExport: ui.onExport }
 }
 
 function destroy() {
   if (!state) return
   state.stopDOM()
-  state.visibility.disconnect()
   state.ui.destroy()
   state = null
 }
@@ -131,10 +111,8 @@ const api = {
   get count() { return state ? state.storage.count : 0 },
 }
 
-// Internal hooks for unit tests only. Named export: the build unwraps the IIFE
-// global to the default export, so these never reach window.NitPik.
 export const __internals = {
-  submit(data, el) { if (state) state.handleSubmit(data, el) },
+  submit(data) { if (state) state.handleSubmit(data) },
   exportAction(fmt) { return state ? state.onExport(fmt) : undefined },
 }
 
