@@ -10,6 +10,8 @@ const base = {
   format: 'iife',
   globalName: 'NitPik',
   target: 'es2015',
+  // globalName assigns the module namespace; unwrap so window.NitPik is the API object.
+  footer: { js: 'NitPik = NitPik.default;' },
 }
 
 const builds = [{ ...base, outfile: 'dist/nitpik.min.js', minify: true }]
