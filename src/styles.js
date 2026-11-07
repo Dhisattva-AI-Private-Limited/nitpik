@@ -55,8 +55,17 @@ button { font: inherit; cursor: pointer; }
 @media (max-width: 480px) {
   [data-nitpik-popover] { width: 100%; max-width: 100%; left: 0 !important; border-radius: 10px 10px 0 0; }
 }
+[data-nitpik-highlight] {
+  position: absolute; pointer-events: none;
+  outline: 2px dashed var(--nitpik-color);
+  outline-offset: 2px; border-radius: 4px;
+  transition: top .1s ease-out, left .1s ease-out, width .1s ease-out, height .1s ease-out;
+  z-index: 2147482999; display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-nitpik-toast] { animation: none; }
   [data-nitpik-trigger] { transition: none; }
+  [data-nitpik-highlight] { transition: none; }
 }
 `

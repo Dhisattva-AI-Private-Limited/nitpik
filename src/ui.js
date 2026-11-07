@@ -3,11 +3,11 @@ import { STYLES } from './styles.js'
 const MAX_PATH = 80
 const MAX_COMMENT_PREVIEW = 80
 const TOAST_MS = 2000
-// Lucide "message-square" outline (ISC), sourced via Animotion.
 const ICON_PATH = 'M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.7.7 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z'
 const SVG_NS = 'http://www.w3.org/2000/svg'
 const POPOVER_GAP = 8
 const POPOVER_EST_HEIGHT = 200
+const TRIGGER_SIZE = 24
 
 function truncate(text, max) {
   return text.length > max ? text.slice(0, max) + '...' : text
@@ -34,14 +34,17 @@ export function createUI(options = {}) {
   const { color = '#F59E0B', onSubmit = () => {}, reviewer = '' } = options
   let host = null
   let root = null
-  let triggers = [] // { info, button }
+  let nodeMap = null
+  let triggerEl = null
+  let highlightEl = null
+  let activeNode = null
   let popover = null
-  let activeTrigger = null
   let counter = null
   let panel = null
   let comments = []
   let reviewMode = false
   let resizeObserver = null
+  let rafPending = false
   const cleanups = []
   const commented = new Set()
 
@@ -52,27 +55,65 @@ export function createUI(options = {}) {
     cleanups.push(() => target.removeEventListener(type, fn, opts))
   }
 
-  function positionTrigger({ info, button }) {
-    const r = info.element.getBoundingClientRect()
-    button.style.top = `${r.top + window.scrollY + 4}px`
-    button.style.left = `${r.right + window.scrollX - 28}px`
-  }
-  function repositionAll() { triggers.forEach(positionTrigger) }
-
-  function onHover(e) {
-    const t = e.target
-    for (const tr of triggers) {
-      const hovered = tr.info.element === t || tr.info.element.contains(t)
-      tr.button.classList.toggle('hovered', hovered)
-      tr.button.style.opacity = hovered ? '1' : ''
+  function findActiveNode(target) {
+    if (!nodeMap) return null
+    let el = target
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (nodeMap.has(el)) return nodeMap.get(el)
+      el = el.parentElement
     }
+    return null
+  }
+
+  function positionTrigger(node) {
+    if (!triggerEl || !node) return
+    const r = node.element.getBoundingClientRect()
+    const half = TRIGGER_SIZE / 2
+    let top = r.top + window.scrollY - half
+    let left = r.right + window.scrollX - half
+    if (top < 0) top = 0
+    if (left < 0) left = 0
+    const vw = document.documentElement.clientWidth || window.innerWidth || 1024
+    if (left + TRIGGER_SIZE > vw + window.scrollX) left = vw + window.scrollX - TRIGGER_SIZE
+    triggerEl.style.top = `${top}px`
+    triggerEl.style.left = `${left}px`
+    triggerEl.style.opacity = '1'
+    triggerEl.setAttribute('aria-label', `Comment on ${truncate(node.info.path, MAX_PATH)}`)
+  }
+
+  function positionHighlight(node) {
+    if (!highlightEl || !node) return
+    const r = node.element.getBoundingClientRect()
+    highlightEl.style.top = `${r.top + window.scrollY}px`
+    highlightEl.style.left = `${r.left + window.scrollX}px`
+    highlightEl.style.width = `${r.width}px`
+    highlightEl.style.height = `${r.height}px`
+    highlightEl.style.display = 'block'
+  }
+
+  function hideUI() {
+    if (triggerEl) { triggerEl.style.opacity = '0' }
+    if (highlightEl) { highlightEl.style.display = 'none' }
+    activeNode = null
+  }
+
+  function onMouseMove(e) {
+    if (popover) return
+    processHover(e.target)
+  }
+
+  function processHover(target) {
+    const node = findActiveNode(target)
+    if (node === activeNode) return
+    if (!node) { hideUI(); return }
+    activeNode = node
+    positionTrigger(node)
+    positionHighlight(node)
   }
 
   function closePopover() {
     if (popover) popover.remove()
     popover = null
-    if (activeTrigger) activeTrigger.button.focus?.()
-    activeTrigger = null
   }
 
   function placePopover(el, anchor) {
@@ -86,10 +127,11 @@ export function createUI(options = {}) {
     el.style.left = `${left}px`
   }
 
-  function openPopover(tr) {
+  function openPopover() {
+    if (!activeNode) return
     closePopover()
-    activeTrigger = tr
-    const { info } = tr
+    const node = activeNode
+    const { info } = node
     popover = h('div', { 'data-nitpik-popover': '', role: 'dialog', 'aria-label': 'Add comment' })
     const form = h('form')
     const label = h('div', { 'data-nitpik-path': '' }, truncate(info.path, MAX_PATH))
@@ -156,35 +198,40 @@ export function createUI(options = {}) {
     host.style.setProperty('--nitpik-color', color)
     root.appendChild(h('style', {}, STYLES))
     document.body.appendChild(host)
-    listen(document, 'mouseover', onHover)
+    listen(document, 'mousemove', onMouseMove)
     listen(document, 'keydown', onKeydown)
-    listen(window, 'resize', repositionAll)
+    listen(window, 'scroll', () => { if (activeNode) { positionTrigger(activeNode); positionHighlight(activeNode) } })
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(repositionAll)
+      resizeObserver = new ResizeObserver(() => { if (activeNode) { positionTrigger(activeNode); positionHighlight(activeNode) } })
       resizeObserver.observe(document.body)
     }
   }
 
-  ctl.addTriggers = function addTriggers(elements) {
+  ctl.setTree = function setTree(map) {
+    nodeMap = map
     if (!root) return
-    for (const info of elements) {
-      const button = h('button', {
-        type: 'button', tabindex: '0', 'data-nitpik-trigger': '', 'aria-label': `Comment on ${info.path}`,
+    if (!triggerEl) {
+      triggerEl = h('button', {
+        type: 'button', tabindex: '0', 'data-nitpik-trigger': '', 'aria-label': 'Comment',
       })
-      button.appendChild(buildIcon())
-      if (reviewMode) button.classList.add('visible')
-      const tr = { info, button }
-      button.addEventListener('click', () => openPopover(tr))
-      root.appendChild(button)
-      positionTrigger(tr)
-      triggers.push(tr)
+      triggerEl.appendChild(buildIcon())
+      triggerEl.style.opacity = '0'
+      triggerEl.addEventListener('click', openPopover)
+      root.appendChild(triggerEl)
     }
+    if (!highlightEl) {
+      highlightEl = h('div', { 'data-nitpik-highlight': '' })
+      root.appendChild(highlightEl)
+    }
+    if (reviewMode && triggerEl) triggerEl.classList.add('visible')
   }
 
-  ctl.removeTriggers = function removeTriggers() {
+  ctl.clearTree = function clearTree() {
+    nodeMap = null
+    activeNode = null
+    if (triggerEl) triggerEl.style.opacity = '0'
+    if (highlightEl) highlightEl.style.display = 'none'
     closePopover()
-    triggers.forEach((t) => t.button.remove())
-    triggers = []
   }
 
   ctl.showToast = function showToast(message) {
@@ -211,7 +258,7 @@ export function createUI(options = {}) {
 
   ctl.setReviewMode = function setReviewMode(on) {
     reviewMode = !!on
-    triggers.forEach((t) => t.button.classList.toggle('visible', reviewMode))
+    if (triggerEl) triggerEl.classList.toggle('visible', reviewMode)
   }
 
   ctl.destroy = function destroy() {
@@ -220,9 +267,11 @@ export function createUI(options = {}) {
     resizeObserver = null
     commented.forEach((el) => { el.removeAttribute('data-nitpik-commented'); el.style.outline = '' })
     commented.clear()
+    closePopover()
     if (host) host.remove()
-    host = root = popover = counter = panel = activeTrigger = null
-    triggers = []
+    host = root = popover = counter = panel = triggerEl = highlightEl = activeNode = null
+    nodeMap = null
+    rafPending = false
   }
 
   return ctl
